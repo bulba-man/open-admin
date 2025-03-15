@@ -1,37 +1,37 @@
 @include("admin::grid.table-header")
 
-    <!-- /.box-header -->
-    <div class="card-body table-responsive no-padding">
-        <div class="tables-container">
-            <div class="table-wrap table-main">
-                <table class="table grid-table select-table" id="{{ $grid->tableID }}">
-                    <thead>
-                        <tr>
-                            @foreach($grid->visibleColumns() as $column)
-                            <th {!! $column->formatHtmlAttributes() !!}>{{$column->getLabel()}}{!! $column->renderHeader() !!}</th>
-                            @endforeach
-                        </tr>
-                    </thead>
+<!-- /.box-header -->
+<div class="card-body table-responsive no-padding">
+    <div class="tables-container">
+        <div class="table-wrap table-main">
+            <table class="table grid-table select-table table-hover" id="{{ $grid->tableID }}">
+                <thead>
+                <tr>
+                    @foreach($grid->visibleColumns() as $column)
+                        <th {!! $column->formatHtmlAttributes() !!}>{{$column->getLabel()}}{!! $column->renderHeader() !!}</th>
+                    @endforeach
+                </tr>
+                </thead>
 
-                    <tbody>
+                <tbody>
 
-                        @foreach($grid->rows() as $row)
-                        <tr {!! $row->getRowAttributes() !!}>
-                            @foreach($grid->visibleColumnNames() as $name)
+                @foreach($grid->rows() as $row)
+                    <tr {!! $row->getRowAttributes() !!}>
+                        @foreach($grid->visibleColumnNames() as $name)
                             <td {!! $row->getColumnAttributes($name) !!} class="column-{!! $name !!}">
                                 {!! $row->column($name) !!}
                             </td>
-                            @endforeach
-                        </tr>
                         @endforeach
-                    </tbody>
+                    </tr>
+                @endforeach
+                </tbody>
 
-                    {!! $grid->renderTotalRow() !!}
+                {!! $grid->renderTotalRow() !!}
 
-                </table>
-            </div>
+            </table>
+        </div>
 
-            @if($grid->leftVisibleColumns()->isNotEmpty())
+        @if($grid->leftVisibleColumns()->isNotEmpty())
             <div class="table-wrap table-fixed table-fixed-left">
                 <table class="table grid-table select-table">
                     <thead>
@@ -61,9 +61,9 @@
 
                 </table>
             </div>
-            @endif
+        @endif
 
-            @if($grid->rightVisibleColumns()->isNotEmpty())
+        @if($grid->rightVisibleColumns()->isNotEmpty())
             <div class="table-wrap table-fixed table-fixed-right">
                 <table class="table grid-table select-table">
                     <thead>
@@ -80,7 +80,7 @@
                         <tr {!! $row->getRowAttributes() !!}>
                             @foreach($grid->rightVisibleColumns() as $column)
                                 @php
-                                $name = $column->getName()
+                                    $name = $column->getName()
                                 @endphp
                                 <td {!! $row->getColumnAttributes($name) !!} class="column-{!! $name !!}">
                                     {!! $row->column($name) !!}
@@ -94,16 +94,16 @@
 
                 </table>
             </div>
-            @endif
-        </div>
+        @endif
     </div>
+</div>
 
-    {!! $grid->renderFooter() !!}
+{!! $grid->renderFooter() !!}
 
-    <div class="card-footer clearfix">
-        {!! $grid->paginator() !!}
-    </div>
-    <!-- /.box-body -->
+<div class="card-footer clearfix">
+    {!! $grid->paginator() !!}
+</div>
+<!-- /.box-body -->
 </div>
 
 <script>
