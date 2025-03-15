@@ -3,9 +3,15 @@
 namespace OpenAdmin\Admin\Form\Field;
 
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Traits\CanCascadeFields;
 
 class SwitchField extends Field
 {
+
+    use CanCascadeFields;
+
+    protected $cascadeEvent = 'change';
+    
     public function prepare($value)
     {
         if ($value == 'on' || $value == 1) {

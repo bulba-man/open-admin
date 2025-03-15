@@ -44,6 +44,20 @@ class Image extends File
             return '';
         }
 
+        $hasDeleteFlag = false;
+        $requestData = request()->all();
+        array_walk_recursive($requestData, function ($item, $key) use (&$hasDeleteFlag) {
+            if ($key == $this->column.Field::FILE_DELETE_FLAG) {
+                $hasDeleteFlag = true;
+            }
+        });
+
+        if ($hasDeleteFlag) {
+            $this->destroy();
+
+            return '';
+        }
+
         if (!empty($file)) {
             if ($this->picker) {
                 return parent::prepare($file);
