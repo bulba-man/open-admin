@@ -268,6 +268,47 @@ class Column
     }
 
     /**
+     * Set column alignment
+     *
+     * @param string $align
+     * @return $this
+     */
+    public function textAlign($align)
+    {
+        return $this->style("text-align:$align;");
+    }
+
+    /**
+     * Set column alignment center
+     *
+     * @return $this
+     */
+    public function textCenter()
+    {
+        return $this->textAlign("center");
+    }
+
+    /**
+     * Set column alignment left
+     *
+     * @return $this
+     */
+    public function textLeft()
+    {
+        return $this->textAlign("left");
+    }
+
+    /**
+     * Set column alignment right
+     *
+     * @return $this
+     */
+    public function textRight()
+    {
+        return $this->textAlign("right");
+    }
+
+    /**
      * Get original column value.
      *
      * @return mixed
