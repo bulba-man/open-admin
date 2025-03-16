@@ -37,6 +37,11 @@ class Select extends Presenter
     protected bool $native = false;
 
     /**
+     * @var bool
+     */
+    private bool $emptyOption = true;
+
+    /**
      * Select constructor.
      *
      * @param mixed $options
@@ -177,6 +182,18 @@ class Select extends Presenter
     }
 
     /**
+     * Set selectbox without empty option.
+     *
+     * @return $this
+     */
+    public function hideEmpty(): static
+    {
+        $this->emptyOption = false;
+
+        return $this;
+    }
+
+    /**
      * Load options from remote.
      *
      * @param string $url
@@ -247,6 +264,7 @@ JS;
         return [
             'options' => $this->buildOptions(),
             'class'   => $this->getElementClass(),
+            'emptyOption'   => $this->emptyOption,
         ];
     }
 
