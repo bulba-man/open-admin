@@ -32,6 +32,11 @@ class Select extends Presenter
     protected $additional_script = '';
 
     /**
+     * @var bool
+     */
+    protected bool $native = false;
+
+    /**
      * Select constructor.
      *
      * @param mixed $options
@@ -99,8 +104,10 @@ class Select extends Presenter
         ], $this->config);
         $configs = json_encode($configs);
 
-        $script = 'var '.$this->choicesObjName()." = new Choices('.{$this->getElementClass()}',{$configs});";
-        Admin::script($script.$this->additional_script);
+        if (!$this->native) {
+            $script = 'var ' . $this->choicesObjName() . " = new Choices('.{$this->getElementClass()}',{$configs});";
+            Admin::script($script . $this->additional_script);
+        }
 
         return is_array($this->options) ? $this->options : [];
     }
@@ -141,6 +148,30 @@ class Select extends Presenter
 
             return $model::find($resources)->pluck($textField, $idField)->toArray();
         };
+
+        return $this;
+    }
+
+    /**
+     * Set use browser native selectbox.
+     *
+     * @return $this
+     */
+    public function useNative(): static
+    {
+        $this->native = true;
+
+        return $this;
+    }
+
+    /**
+     * Set use browser ChoicesJs selectbox.
+     *
+     * @return $this
+     */
+    public function useChoicesjs(): static
+    {
+        $this->native = false;
 
         return $this;
     }
