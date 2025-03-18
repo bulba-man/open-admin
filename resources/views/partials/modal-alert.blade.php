@@ -16,7 +16,12 @@
 
         const alertModal = new bootstrap.Modal(document.getElementById('modalAlert'), {backdrop: 'static'});
 
+        window.alert_native = window.alert;
         window.alert = function alert(content, title = null) {
+            if (title === true) {
+                window.alert_native(content);
+                return;
+            }
             let modalNode = document.getElementById('modalAlert');
             let titleNode = modalNode.querySelector('.modal-title');
             let bodyNode = modalNode.querySelector('.modal-body');
