@@ -128,6 +128,15 @@ class Builder
     }
 
     /**
+     * Get form
+     *
+     * @return Form
+     */
+    public function getForm(): Form
+    {
+        return $this->form;
+    }
+    /**
      * Get form tools instance.
      *
      * @return Tools
