@@ -60,6 +60,20 @@ trait HasFormAttributes
     }
 
     /**
+     * Get form attribute
+     *
+     * @param string $attr
+     * @return string|null
+     */
+    public function getAttribute(string $attr) {
+        if (isset($this->attributes[$attr])) {
+            return $this->attributes[$attr];
+        }
+
+        return null;
+    }
+
+    /**
      * Add form removeAttribute.
      *
      * @param string $attr
