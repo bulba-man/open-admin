@@ -56,6 +56,10 @@
         @include('admin::partials.modal-alert')
     @endif
 
+    @if(config('admin.use_custom_prompts'))
+        @include('admin::partials.modal-prompt')
+    @endif
+
     <script>
         function LA() {}
         LA.token = "{{ csrf_token() }}";
