@@ -19,9 +19,11 @@ admin.form = {
     },
 
     beforeSave: function () {
-        for (i in this.beforeSaveCallbacks) {
-            var callback = this.beforeSaveCallbacks[i];
-            callback();
+        if (this.beforeSaveCallbacks.length) {
+            for (i in this.beforeSaveCallbacks) {
+                var callback = this.beforeSaveCallbacks[i];
+                callback();
+            }
         }
     },
 
