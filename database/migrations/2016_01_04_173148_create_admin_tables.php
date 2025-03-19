@@ -52,6 +52,8 @@ class CreateAdminTables extends Migration
             $table->integer('parent_id')->default(0);
             $table->integer('order')->default(0);
             $table->string('title', 50);
+            $table->string('classes')->nullable();
+            $table->boolean('ajax')->default(1)->nullable();
             $table->string('icon', 50);
             $table->string('uri')->nullable();
             $table->string('permission')->nullable();

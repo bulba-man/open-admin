@@ -110,4 +110,6 @@ return [
     'prev'                   => 'Prev',
     'next'                   => 'Next',
     'quick_create'           => 'Quick create',
+    'css_classes'            => 'Css Classes',
+    'open_by_ajax'           => 'Open by Ajax',
 ];

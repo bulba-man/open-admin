@@ -104,4 +104,6 @@ return [
     'prev'                   => 'Предыдущая',
     'next'                   => 'Следующая',
     'quick_create'           => 'Быстрое добавление',
+    'css_classes'            => 'Css Классы',
+    'open_by_ajax'           => 'Открыть через Ajax',
 ];
