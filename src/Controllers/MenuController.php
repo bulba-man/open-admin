@@ -39,6 +39,7 @@ class MenuController extends Controller
 
                     $form->select('parent_id', trans('admin.parent_id'))->options($menuModel::selectOptions())->setWidth(7, 3);
                     $form->text('title', trans('admin.title'))->rules('required')->setWidth(7, 3);
+                    $form->text('slug', trans('admin.slug'))->help(trans('admin.menu_form.slug_help'))->setWidth(7, 3);
                     $form->icon('icon', trans('admin.icon'))->default('fa-bars')->rules('required')->help($this->iconHelp())->setWidth(7, 3);
                     $form->text('classes', trans('admin.css_classes'))->setWidth(7, 3);
                     $form->text('uri', trans('admin.uri'))->setWidth(7, 3);
@@ -129,6 +130,7 @@ class MenuController extends Controller
 
         $form->select('parent_id', trans('admin.parent_id'))->options($menuModel::selectOptions());
         $form->text('title', trans('admin.title'))->rules('required');
+        $form->text('slug', trans('admin.slug'))->help(trans('admin.menu_form.slug_help'));
         $form->icon('icon', trans('admin.icon'))->default('fa-bars')->rules('required')->help($this->iconHelp());
         $form->text('classes', trans('admin.css_classes'));
         $form->text('uri', trans('admin.uri'));

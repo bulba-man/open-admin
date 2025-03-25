@@ -355,7 +355,7 @@ abstract class Extension
      *
      * @return Model
      */
-    protected static function createMenu($title, $uri, $icon = 'fa-bars', $parentId = 0, array $children = [])
+    protected static function createMenu($title, $uri, $icon = 'fa-bars', $parentId = 0, array $children = [], string $slug = '')
     {
         $menuModel = config('admin.database.menu_model');
 
@@ -367,6 +367,7 @@ abstract class Extension
             'parent_id' => $parentId,
             'order'     => $lastOrder + 1,
             'title'     => $title,
+            'slug'      => $slug,
             'icon'      => $icon,
             'uri'       => $uri,
         ]);
@@ -375,10 +376,11 @@ abstract class Extension
             foreach ($children as $child) {
                 if ($extension->validateMenu($child)) {
                     $subTitle = Arr::get($child, 'title');
+                    $slug = Arr::get($child, 'slug', '');
                     $subUri = Arr::get($child, 'path');
                     $subIcon = Arr::get($child, 'icon');
                     $subChildren = Arr::get($child, 'children', []);
-                    static::createMenu($subTitle, $subUri, $subIcon, $menu->getKey(), $subChildren);
+                    static::createMenu($subTitle, $subUri, $subIcon, $menu->getKey(), $subChildren, $slug);
                 }
             }
         }

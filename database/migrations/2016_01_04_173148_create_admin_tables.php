@@ -51,6 +51,7 @@ class CreateAdminTables extends Migration
             $table->increments('id');
             $table->integer('parent_id')->default(0);
             $table->integer('order')->default(0);
+            $table->string('slug', 50)->unique();
             $table->string('title', 50);
             $table->string('classes')->nullable();
             $table->boolean('ajax')->default(1)->nullable();

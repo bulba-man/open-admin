@@ -112,4 +112,7 @@ return [
     'quick_create'           => 'Quick create',
     'css_classes'            => 'Css Classes',
     'open_by_ajax'           => 'Open by Ajax',
+    'menu_form'              => [
+        'slug_help' => 'Used to make searching easier'
+    ],
 ];

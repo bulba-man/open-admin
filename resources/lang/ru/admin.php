@@ -106,4 +106,7 @@ return [
     'quick_create'           => 'Быстрое добавление',
     'css_classes'            => 'Css Классы',
     'open_by_ajax'           => 'Открыть через Ajax',
+    'menu_form'              => [
+        'slug_help' => 'Используется для упрощения поиска'
+    ],
 ];
