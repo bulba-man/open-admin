@@ -383,16 +383,17 @@ class Form implements Renderable
     /**
      * Add a fieldset to form.
      *
-     * @param string  $title
+     * @param string $title
      * @param Closure $setCallback
-     *
+     * @param bool $collapsed
+     * @param bool $hideLink
      * @return Field\Fieldset
      */
-    public function fieldset(string $title, Closure $setCallback)
+    public function fieldset(string $title, Closure $setCallback, $collapsed = true, $hideLink = false)
     {
         $fieldset = new Field\Fieldset();
 
-        $this->html($fieldset->start($title))->plain();
+        $this->html($fieldset->start($title, $collapsed, $hideLink))->plain();
 
         $setCallback($this);
 
