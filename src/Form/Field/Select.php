@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 use OpenAdmin\Admin\Form\Field\Traits\CanCascadeFields;
 
 class Select extends Field
@@ -47,8 +48,22 @@ class Select extends Field
         // remote options
         if (is_string($options)) {
             // reload selected
-            if (class_exists($options) && in_array(Model::class, class_parents($options))) {
-                return $this->model(...func_get_args());
+            if (class_exists($options)) {
+                if (in_array(Model::class, class_parents($options))) {
+                    return $this->model(...func_get_args());
+                }
+
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    return $this->options = $class->toOptionArray();
+                }
+            }
+
+            $arr = json_decode($options);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $this->options = $arr;
             }
 
             return $this->loadRemoteOptions(...func_get_args());

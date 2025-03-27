@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
 
 /**
@@ -532,6 +533,22 @@ class Field implements Renderable
     {
         if ($options instanceof Arrayable) {
             $options = $options->toArray();
+        }
+
+        if (is_string($options)) {
+            if (class_exists($options)) {
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    $this->options = $class->toOptionArray();
+                }
+            } else {
+                $arr = json_decode($options);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $this->options = $arr;
+                }
+            }
         }
 
         $this->options = array_merge($this->options, $options);
