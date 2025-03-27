@@ -92,6 +92,8 @@ return [
     'time'                  => 'Время',
     'size'                  => 'Размер',
     'listbox'               => [
+        'title_available'    => 'Доступные',
+        'title_selected'     => 'Выбранные',
         'text_total'         => 'Все: {0}',
         'text_empty'         => 'Пустой список',
         'filtered'           => '{0} / {1}',
