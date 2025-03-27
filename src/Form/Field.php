@@ -85,7 +85,7 @@ class Field implements Renderable
      *
      * @var string
      */
-    protected $elementName = [];
+    protected $elementName = '';
 
     /**
      * Form element classes.
@@ -873,6 +873,13 @@ class Field implements Renderable
             return $this->value ?? $this->getDefault();
         }
 
+        $this->value = $value;
+
+        return $this;
+    }
+
+    public function setValue($value = null)
+    {
         $this->value = $value;
 
         return $this;

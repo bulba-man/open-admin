@@ -150,6 +150,11 @@ class Form implements Renderable
         return $this;
     }
 
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
     /**
      * Get form description.
      *
