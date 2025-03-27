@@ -61,7 +61,7 @@ class Select extends Field
                 }
             }
 
-            $arr = json_decode($options);
+            $arr = json_decode($options, true);
             if (json_last_error() === JSON_ERROR_NONE) {
                 return $this->options = $arr;
             }

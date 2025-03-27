@@ -544,7 +544,7 @@ class Field implements Renderable
                     $this->options = $class->toOptionArray();
                 }
             } else {
-                $arr = json_decode($options);
+                $arr = json_decode($options, true);
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $this->options = $arr;
                 }
