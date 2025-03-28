@@ -66,6 +66,8 @@ class DualListbox {
         this.removeAllButtonText = '<span class="icon-angle-double-left"></span>';
 
         this.searchPlaceholder = 'Search';
+
+        this.disabled = false;
     }
 
     /**
@@ -247,6 +249,10 @@ class DualListbox {
             event.stopPropagation();
         }
 
+        if (this.disabled) {
+            return;
+        }
+
         if (this.selected.indexOf(listItem) > -1) {
             this.removeSelected(listItem);
         } else {
@@ -260,6 +266,10 @@ class DualListbox {
     _actionItemClick(listItem, dualListbox, event = null) {
         if (event) {
             event.preventDefault();
+        }
+
+        if (this.disabled) {
+            return;
         }
 
         let items = dualListbox.querySelectorAll(`.${ITEM_ELEMENT}`);
@@ -426,7 +436,7 @@ class DualListbox {
      * @Private
      * Creates the search input.
      */
-     _createSearchRight() {
+    _createSearchRight() {
         this.search_right = document.createElement('input');
         this.search_right.classList.add(SEARCH_ELEMENT);
         this.search_right.placeholder = this.searchPlaceholder;
@@ -570,6 +580,26 @@ class DualListbox {
             typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
                 o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName === "string"
         );
+    }
+
+    disable() {
+        this.disabled = true;
+        this.dualListBoxContainer.setAttribute('disabled', true)
+        this.dualListBoxContainer.classList.add('disabled');
+
+        this.searchLists('', this.availableList);
+        this.searchLists('', this.selectedList);
+        var formElems = Array.from(this.dualListBoxContainer.querySelectorAll('input, button'));
+        formElems.forEach(el => {el.value = '';el.disabled = true;});
+    }
+
+    enable() {
+        this.disabled = false;
+        this.dualListBoxContainer.removeAttribute('disabled');
+        this.dualListBoxContainer.classList.remove('disabled');
+
+        var formElems = Array.from(this.dualListBoxContainer.querySelectorAll('input, button'));
+        formElems.forEach(el => {el.disabled = false;});
     }
 }
 

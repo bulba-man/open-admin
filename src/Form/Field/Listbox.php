@@ -49,14 +49,20 @@ class Listbox extends MultipleSelect
         $settings = array_merge([
             'availableTitle'        => trans('admin.listbox.title_available'),
             'selectedTitle'         => trans('admin.listbox.title_selected'),
+            'searchPlaceholder'         => trans('admin.listbox.search_placeholder'),
             'minHeight'             => 200,
         ], $this->settings);
 
         $settings = json_encode($settings);
+        $varName = 'dualListbox_'.str_replace('choices_', '', $this->choicesObjName());
 
         $this->script .= <<<SCRIPT
-        let dualListbox = new DualListbox("{$this->getElementClassSelector()}",$settings);
+        let {$varName} = new DualListbox("{$this->getElementClassSelector()}",$settings);
 
+        if(!window.listbox_vars) {
+            window.listbox_vars = [];
+        }
+        window.listbox_vars['{$varName}'] = {$varName};
 
 SCRIPT;
 

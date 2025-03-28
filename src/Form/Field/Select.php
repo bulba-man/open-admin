@@ -368,6 +368,7 @@ JS;
 
         if (!$this->native && $this->allowedChoicesJs()) {
             $this->script .= 'var '.$this->choicesObjName()." = new Choices('{$this->getElementClassSelector()}',{$configs});";
+            $this->script .= "\r\nif(!window.choices_vars) {window.choices_vars = []}\r\nwindow.choices_vars['{$this->choicesObjName()}'] = {$this->choicesObjName()};\r\n";
             $this->script .= $this->additional_script;
         }
 

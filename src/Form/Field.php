@@ -219,6 +219,7 @@ class Field implements Renderable
     protected $width = [
         'label' => 2,
         'field' => 8,
+        'reset' => 2,
     ];
 
     /**
@@ -273,6 +274,10 @@ class Field implements Renderable
      * @var bool
      */
     public $isJsonType = false;
+    /**
+     * @var mixed|true
+     */
+    protected bool $resettable = false;
 
     /**
      * Field constructor.
@@ -509,14 +514,16 @@ class Field implements Renderable
      *
      * @param int $field
      * @param int $label
+     * @param int $reset
      *
      * @return $this
      */
-    public function setWidth($field = 8, $label = 2): self
+    public function setWidth(int $field = 8, int $label = 2, int $reset = 2): self
     {
         $this->width = [
             'label' => $label,
             'field' => $field,
+            'reset' => $reset,
         ];
 
         return $this;
@@ -1315,11 +1322,12 @@ class Field implements Renderable
             return [
                 'label'      => "col-sm-{$this->width['label']} {$this->getLabelClass()}",
                 'field'      => "col-sm-{$this->width['field']}",
+                'reset'      => "col-sm-{$this->width['reset']}",
                 'form-group' => $this->getGroupClass(true),
             ];
         }
 
-        return ['label' => $this->getLabelClass(), 'field' => '', 'form-group' => ''];
+        return ['label' => $this->getLabelClass(), 'field' => '', 'form-group' => '', 'reset' => ''];
     }
 
     /**
@@ -1519,6 +1527,19 @@ class Field implements Renderable
     }
 
     /**
+     * Field can be reset to default value
+     *
+     * @param bool $resettable
+     * @return $this
+     */
+    public function resettable(bool $resettable = true): static
+    {
+        $this->resettable = $resettable;
+
+        return $this;
+    }
+
+    /**
      * Get the view variables of this field.
      *
      * @return array
@@ -1533,6 +1554,7 @@ class Field implements Renderable
             'showAsSection'   => $this->showAsSection,
             'class'           => $this->getElementClassString(),
             'value'           => $this->value(),
+            'defaultValue'    => $this->getDefault(),
             'label'           => $this->label,
             'viewClass'       => $this->getViewElementClasses(),
             'column'          => $this->column,
@@ -1540,6 +1562,7 @@ class Field implements Renderable
             'attributes'      => $this->formatAttributes(),
             'placeholder'     => $this->getPlaceholder(),
             'attributes_obj'  => $this->attributes,
+            'resettable'      => $this->resettable,
         ]);
     }
 

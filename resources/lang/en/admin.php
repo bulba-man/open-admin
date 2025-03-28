@@ -103,6 +103,7 @@ return [
         'filtered'            => '{0} / {1}',
         'filter_clear'        => 'Show all',
         'filter_placeholder'  => 'Filter',
+        'search_placeholder'   => 'Search',
     ],
     'grid_items_selected'    => '{n} items selected',
 

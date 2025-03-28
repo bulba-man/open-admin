@@ -99,6 +99,7 @@ return [
         'filtered'           => '{0} / {1}',
         'filter_clear'       => 'Показать все',
         'filter_placeholder' => 'Фильтр',
+        'search_placeholder'  => 'Поиск',
     ],
     'grid_items_selected'    => '{n} элементов выбрано',
 
