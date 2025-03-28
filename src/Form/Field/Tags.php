@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 
 class Tags extends Select
 {
@@ -96,6 +97,26 @@ class Tags extends Select
 
         if ($options instanceof Arrayable) {
             $options = $options->toArray();
+        }
+
+        if (is_string($options)) {
+            if (class_exists($options)) {
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    $this->options = $class->toOptionArray();
+
+                    return $this;
+                }
+            }
+
+            $arr = json_decode($options, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->options = $arr;
+
+                return $this;
+            }
         }
 
         $this->options = $options + $this->options;

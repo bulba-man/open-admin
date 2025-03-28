@@ -57,13 +57,17 @@ class Select extends Field
                 if (isset($interfaces[OptionSourceInterface::class])) {
                     /** @var OptionSourceInterface $class */
                     $class = new $options;
-                    return $this->options = $class->toOptionArray();
+                    $this->options = $class->toOptionArray();
+
+                    return $this;
                 }
             }
 
             $arr = json_decode($options, true);
             if (json_last_error() === JSON_ERROR_NONE) {
-                return $this->options = $arr;
+                $this->options = $arr;
+
+                return $this;
             }
 
             return $this->loadRemoteOptions(...func_get_args());
