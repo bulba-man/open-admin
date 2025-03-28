@@ -18,7 +18,7 @@
                         $checked = true;
                     }
                 } else {
-                    $checked = (bool) $value == $defaultValue;
+                    $checked = $value == $defaultValue;
                 }
 
             @endphp
