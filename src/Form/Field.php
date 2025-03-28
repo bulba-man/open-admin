@@ -549,11 +549,15 @@ class Field implements Renderable
                     /** @var OptionSourceInterface $class */
                     $class = new $options;
                     $this->options = $class->toOptionArray();
+
+                    return $this;
                 }
             } else {
                 $arr = json_decode($options, true);
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $this->options = $arr;
+
+                    return $this;
                 }
             }
         }
