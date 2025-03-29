@@ -1,7 +1,7 @@
 @include("admin::form._header")
 
-        <div id="has-many-{{$column}}">
-            <table class="table table-with-fields has-many-{{$column}} vertical-align-{{$verticalAlign}}">
+        <div id="has-many-{{$id}}">
+            <table class="table table-with-fields has-many-{{$id}} vertical-align-{{$verticalAlign}}">
                 <thead>
                 <tr>
                     @if(!empty($options['sortable']))
@@ -19,9 +19,9 @@
                     @endif
                 </tr>
                 </thead>
-                <tbody class="has-many-{{$column}}-forms">
+                <tbody class="has-many-{{$id}}-forms">
                 @foreach($forms as $pk => $form)
-                    <tr class="has-many-{{$column}}-form fields-group">
+                    <tr class="has-many-{{$id}}-form fields-group">
 
                         @if(!empty($options['sortable']))
                            <td width="20"><span class="icon-arrows-alt-v btn btn-light handle"></span></td>
@@ -53,8 +53,8 @@
                 </tbody>
             </table>
 
-            <template class="{{$column}}-tpl">
-                <tr class="has-many-{{$column}}-form fields-group">
+            <template class="{{$id}}-tpl">
+                <tr class="has-many-{{$id}}-form fields-group">
 
                     @if(!empty($options['sortable']))
                         <td width="20"><span class="icon-arrows-alt-v btn btn-light handle"></span></td>

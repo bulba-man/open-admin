@@ -24,6 +24,7 @@ class Table extends HasMany
     public function __construct($column, $arguments = [])
     {
         $this->column = $column;
+        $this->id = $this->formatId($column);
 
         if (count($arguments) == 1) {
             $this->label   = $this->formatLabel();

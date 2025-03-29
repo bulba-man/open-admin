@@ -1,4 +1,4 @@
-<div id="has-many-{{$column}}" class="nav-tabs-custom has-many-{{$column}}">
+<div id="has-many-{{$id}}" class="nav-tabs-custom has-many-{{$id}}">
     <div class="row header has-many-head ">
         <h4>{{ $label }}</h4>
     </div>
@@ -19,10 +19,10 @@
 
     </ul>
 
-    <div class="tab-content has-many-{{$column}}-forms">
+    <div class="tab-content has-many-{{$id}}-forms">
 
         @foreach($forms as $pk => $form)
-            <div class="tab-pane fields-group has-many-{{$column}}-form @if ($form == reset($forms)) active @endif" id="{{ $relationName . '_' . $pk }}">
+            <div class="tab-pane fields-group has-many-{{$id}}-form @if ($form == reset($forms)) active @endif" id="{{ $relationName . '_' . $pk }}">
                 @foreach($form->fields() as $field)
                     {!! $field->render() !!}
                 @endforeach
@@ -39,14 +39,14 @@
         @endforeach
     </div>
 
-    <template class="{{$column}}-tab-tpl">
+    <template class="{{$id}}-tab-tpl">
         <li class="new nav-item" id="tab_{{ $relationName . '_new_' . \OpenAdmin\Admin\Form\NestedForm::DEFAULT_KEY_NAME }}">
             <a class="nav-link" href="#{{ $relationName . '_new_' . \OpenAdmin\Admin\Form\NestedForm::DEFAULT_KEY_NAME }}" data-bs-toggle="tab">
                 &nbsp;New {{ \OpenAdmin\Admin\Form\NestedForm::DEFAULT_KEY_NAME }} <i class="icon-exclamation-circle text-red hide"></i>
             </a>
         </li>
     </template>
-    <template  class="{{$column}}-tpl">
+    <template  class="{{$id}}-tpl">
         <div class="tab-pane fields-group new" id="{{ $relationName . '_new_' . \OpenAdmin\Admin\Form\NestedForm::DEFAULT_KEY_NAME }}">
             {!! $template !!}
             @if($options['allowDelete'])

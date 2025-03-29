@@ -23,7 +23,7 @@ trait Sortable
         if (isset($this->options['sortable'])) {
             $script = <<<JS
 
-                var sortable = new Sortable(document.querySelector('{$pref}{$this->column}{$suf}'), {
+                var sortable = new Sortable(document.querySelector('{$pref}{$this->id}{$suf}'), {
                     animation:150,
                     handle: ".handle"
                 });
