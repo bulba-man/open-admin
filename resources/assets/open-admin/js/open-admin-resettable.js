@@ -30,6 +30,7 @@ class ResettableField {
             "Checkbox",
             "Radio",
             "Switch",
+            "Textarea",
         ];
 
         if (this.selfEl.checked) {
@@ -177,6 +178,14 @@ class ResettableField {
         }
 
         return this.flags.isRadioField;
+    }
+
+    isTextareaField() {
+        if (!this.flags.hasOwnProperty('isTextareaField')) {
+            this.flags['isTextareaField'] = (this.elem && this.elem.nodeName === 'TEXTAREA');
+        }
+
+        return this.flags.isTextareaField;
     }
 
     resetChoices() {
@@ -445,5 +454,25 @@ class ResettableField {
 
     enableSwitch() {
         this.elem.disabled = false;
+    }
+
+    resetTextarea() {
+        this.resetInput();
+    }
+
+    setTextarea() {
+        this.setInput();
+    }
+
+    clearTextarea() {
+        this.clearInput();
+    }
+
+    disableTextarea() {
+        this.disableInput();
+    }
+
+    enableTextarea() {
+        this.enableInput();
     }
 }
