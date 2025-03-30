@@ -66,6 +66,8 @@ class Field implements Renderable
      */
     protected $default_on_empty;
 
+    protected $default_on_null;
+
     /**
      * Element label.
      *
@@ -274,6 +276,7 @@ class Field implements Renderable
      * @var bool
      */
     public $isJsonType = false;
+
     /**
      * @var mixed|true
      */
@@ -372,7 +375,7 @@ class Field implements Renderable
             }
 
             if (count($name) === 1) {
-                return $name[0];
+                return ($this->isResettable()) ? $name[0].'[value]' : $name[0];
             }
 
             $html = array_shift($name);
@@ -380,7 +383,7 @@ class Field implements Renderable
                 $html .= "[$piece]";
             }
 
-            return $html;
+            return ($this->isResettable()) ? $html.'[value]' : $html;
         }
 
         if (is_array($this->column)) {
@@ -956,6 +959,13 @@ class Field implements Renderable
         return $this;
     }
 
+    public function defaultOnNull($default_on_null): self
+    {
+        $this->default_on_null = $default_on_null;
+
+        return $this;
+    }
+
     /**
      * Get defaultOnEmpty value.
      *
@@ -968,6 +978,15 @@ class Field implements Renderable
         }
 
         return $this->default_on_empty;
+    }
+
+    public function getDefaultOnNull()
+    {
+        if ($this->default_on_null instanceof \Closure) {
+            return call_user_func($this->default_on_null, $this->form);
+        }
+
+        return $this->default_on_null;
     }
 
     /**
@@ -1264,6 +1283,10 @@ class Field implements Renderable
      */
     public function prepare($value)
     {
+        if ($value === null && $this->default_on_null) {
+            $value = $this->getDefaultOnNull();
+        }
+
         if (empty($value) && $this->default_on_empty) {
             $value = $this->getDefaultOnEmpty();
         }
@@ -1543,6 +1566,11 @@ class Field implements Renderable
         return $this;
     }
 
+    public function isResettable(): bool
+    {
+        return $this->resettable && $this->getDefaultOnNull() !== null;
+    }
+
     /**
      * Get the view variables of this field.
      *
@@ -1566,7 +1594,9 @@ class Field implements Renderable
             'attributes'      => $this->formatAttributes(),
             'placeholder'     => $this->getPlaceholder(),
             'attributes_obj'  => $this->attributes,
-            'resettable'      => $this->resettable,
+            'defaultOnNull'   => $this->getDefaultOnNull(),
+            'isResettable'    => $this->isResettable(),
+            'resettableName'  => Str::beforeLast($this->elementName ?: $this->formatName($this->column), '[value]').'[inherit]',
         ]);
     }
 

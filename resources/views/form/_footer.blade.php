@@ -6,31 +6,31 @@
     <hr class="form-border">
 @endif
 </div>
-@if($resettable)
+@if($isResettable)
     <div class="{{$viewClass['reset']}}">
         <div class="form-check form-check-inline">
             @php
                 $checked = false;
-                if (is_array($value) && is_array($defaultValue)) {
-                    $diffAB = array_diff($value, $defaultValue);
-                    $diffBA = array_diff($defaultValue, $value);
+                if (is_array($value) && is_array($defaultOnNull)) {
+                    $diffAB = array_diff($value, $defaultOnNull);
+                    $diffBA = array_diff($defaultOnNull, $value);
                     if (!count($diffAB) && !count($diffBA)) {
                         $checked = true;
                     }
                 } else {
-                    $checked = $value == $defaultValue;
+                    $checked = $value == $defaultOnNull;
                 }
 
             @endphp
 
-            @php $defaultValue = (is_array($defaultValue)) ? json_encode($defaultValue) : $defaultValue; @endphp
+            @php $defaultOnNull = (is_array($defaultOnNull)) ? json_encode($defaultOnNull) : $defaultOnNull; @endphp
             @php $currentValue = (is_array($value)) ? json_encode($value) : $value; @endphp
 
             <input type="checkbox" class="form-check-input reset-field-to-default" id="{{$id}}-use_default_value_chk"
-                   name="{{$name}}inherit"
+                   name="{{$resettableName}}"
                    value="1"
                    data-elem-class="{{$class}}"
-                   data-default-value="{{$defaultValue}}"
+                   data-default-value="{{$defaultOnNull}}"
                    data-current-value="{{$currentValue}}"
                    {{($checked) ? 'checked' : '' }}
             />

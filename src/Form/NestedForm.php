@@ -5,6 +5,7 @@ namespace OpenAdmin\Admin\Form;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
@@ -100,6 +101,11 @@ class NestedForm
      * @var bool
      */
     protected $save_null_values = true;
+
+    /**
+     * @var mixed|true
+     */
+    protected bool $resettable = false;
 
     /**
      * Create a new NestedForm instance.
@@ -394,6 +400,64 @@ class NestedForm
     }
 
     /**
+     * Field can be reset to default value
+     *
+     * @param bool $resettable
+     * @return $this
+     */
+    public function resettable(bool $resettable = true): static
+    {
+        $this->resettable = $resettable;
+
+        return $this;
+    }
+
+    public function isResettable(): bool
+    {
+        return $this->resettable && $this->getDefaultOnNull() !== null;
+    }
+
+    /**
+     * Format the name of the field.
+     *
+     * @param string $column
+     *
+     * @return array|mixed|string
+     */
+    protected function formatName($column)
+    {
+        if (is_string($column)) {
+            if (Str::contains($column, '->')) {
+                $name = explode('->', $column);
+            } else {
+                $name = explode('.', $column);
+            }
+
+            if (count($name) === 1) {
+                return ($this->isResettable()) ? $name[0].'[value]' : $name[0];
+            }
+
+            $html = array_shift($name);
+            foreach ($name as $piece) {
+                $html .= "[$piece]";
+            }
+
+            return ($this->isResettable()) ? $html.'[value]' : $html;
+        }
+
+        if (is_array($column)) {
+            $names = [];
+            foreach ($column as $key => $name) {
+                $names[$key] = $this->formatName($name);
+            }
+
+            return $names;
+        }
+
+        return '';
+    }
+
+    /**
      * Get the html and script of template.
      *
      * @return array
@@ -437,12 +501,12 @@ class NestedForm
         if (is_array($column)) {
             foreach ($column as $k => $name) {
                 $errorKey[$k]     = sprintf('%s.%s.%s', $this->relationName, $key, $name);
-                $elementName[$k]  = sprintf('%s[%s][%s]', $this->relationName, $key, $name);
+                $elementName[$k]  = sprintf('%s[%s][%s]', $this->formatName($this->relationName), $key, $name);
                 $elementClass[$k] = [$this->relationName, $name];
             }
         } else {
             $errorKey     = sprintf('%s.%s.%s', $this->relationName, $key, $column);
-            $elementName  = sprintf('%s[%s][%s]', $this->relationName, $key, $column);
+            $elementName  = sprintf('%s[%s][%s]', $this->formatName($this->relationName), $key, $column);
             $elementClass = [$this->relationName, $column];
         }
 

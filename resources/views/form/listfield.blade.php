@@ -17,10 +17,10 @@
                     <td>
                         <div class="form-group {{ $errors->has($itemErrorKey) ? 'has-error' : '' }}">
                             <div class="col-sm-12">
-                                <input name="{{ $column }}[]" value="{{ old("{$column}.{$k}", $v) }}" class="form-control" />
+                                <input name="{{ $name }}[]" value="{{ old("{$column}.{$k}", $v) }}" class="form-control" />
                                 @if($errors->has($itemErrorKey))
                                     @foreach($errors->get($itemErrorKey) as $message)
-                                        <label class="form-label" for="inputError"><i class="icon-times-circle-o"></i> {{$message}}</label><br/>
+                                        <div class="text-danger" ><i class="icon-times-circle-o"></i> {{$message}}</div><br/>
                                     @endforeach
                                 @endif
                             </div>
@@ -48,7 +48,7 @@
                 <td>
                     <div class="form-group">
                         <div class="col-sm-12">
-                            <input name="{{ $column }}[]" class="form-control" />
+                            <input name="{{ $name }}[]" class="form-control" />
                         </div>
                     </div>
                 </td>

@@ -7,7 +7,7 @@ class ResettableField {
         this.elem = document.querySelector(this.elemClassSelector);
         this.choicesVarName = 'choices_' + this.elemClass.replace(/[ -]/g, "_");
         this.listBoxVarName = 'dualListbox_' + this.elemClass.replace(/[ -]/g, "_");
-
+        this.changeEvent = new Event('change');
         this.flags = {};
 
         this.defaultValue = this.selfEl.dataset.defaultValue;
@@ -39,12 +39,16 @@ class ResettableField {
     }
 
     onChange(event) {
-        this.event = event;
+        // this.event = event;
 
         if (event.target.checked) {
             this.resetField();
         } else {
             this.setField();
+        }
+
+        if (this.elem) {
+            this.elem.dispatchEvent(this.changeEvent);
         }
     }
 
@@ -270,7 +274,8 @@ class ResettableField {
     }
 
     clearListBox() {
-        this.listBox._actionAllDeselected(this.event);
+        // this.listBox._actionAllDeselected(this.event);
+        this.listBox._actionAllDeselected(this.changeEvent);
     }
 
     disableListBox() {
@@ -416,7 +421,7 @@ class ResettableField {
         this.enableInput();
         this.clearInput();
 
-        this.elem.value = (this.currentValue) ? this.currentValue : this.defaultValue;
+        this.elem.value = this.currentValue;
     }
 
     clearInput() {

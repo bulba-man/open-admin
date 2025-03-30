@@ -117,6 +117,10 @@ class Table extends HasMany
 
         $form->setKey($key);
 
+        if ($this->isResettable()) {
+            $form->resettable();
+        }
+
         call_user_func($builder, $form);
 
         $form->hidden(NestedForm::REMOVE_FLAG_NAME)->default(0)->addElementClass(NestedForm::REMOVE_FLAG_CLASS);

@@ -690,7 +690,7 @@ EOT;
         $this->addSortable('.has-many-', '-forms');
 
         /* @var Field $field */
-        foreach ($this->buildNestedForm($this->column, $this->builder)->fields() as $field) {
+        foreach ($this->buildNestedForm($this->column, $this->builder)->fields() as $i => $field) {
             if (is_a($field, Hidden::class)) {
                 $hidden[] = $field->render();
             } else {

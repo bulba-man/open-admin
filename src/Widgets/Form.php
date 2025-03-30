@@ -345,6 +345,11 @@ class Form implements Renderable
      */
     public function validate(Request $request)
     {
+        return $this->validateData($request->all());
+    }
+
+    public function validateData(array $data)
+    {
         if (method_exists($this, 'form')) {
             $this->form();
         }
@@ -353,7 +358,7 @@ class Form implements Renderable
 
         /** @var Field $field */
         foreach ($this->fields() as $field) {
-            if (!$validator = $field->getValidator($request->all())) {
+            if (!$validator = $field->getValidator($data)) {
                 continue;
             }
 
