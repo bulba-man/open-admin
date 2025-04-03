@@ -1739,6 +1739,6 @@ class Field implements Renderable
      */
     public function __toString()
     {
-        return $this->render()->render();
+        return $this->render();
     }
 }
