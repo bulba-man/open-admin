@@ -13,7 +13,8 @@ class Icon extends Text
     public function render()
     {
         $this->script = <<<JS
-new Iconpicker(document.querySelector("{$this->getElementClassSelector()}"),{
+
+new Iconpicker(document.querySelector('[name="{$this->getElementName()}"]'),{
     showSelectedIn: document.querySelector("{$this->getElementClassSelector()}-icon"),
     defaultValue: '{$this->value}',
 });
