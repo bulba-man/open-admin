@@ -414,6 +414,11 @@ class Field implements Renderable
         return $this;
     }
 
+    public function getElementName()
+    {
+        return $this->elementName ?: $this->formatName($this->column);
+    }
+
     /**
      * Fill data to the field.
      *
@@ -1580,7 +1585,7 @@ class Field implements Renderable
     {
         return array_merge($this->variables, [
             'id'              => $this->id,
-            'name'            => $this->elementName ?: $this->formatName($this->column),
+            'name'            => $this->getElementName(),
             'help'            => $this->help,
             'inline'          => $this->inline,
             'showAsSection'   => $this->showAsSection,
@@ -1596,7 +1601,7 @@ class Field implements Renderable
             'attributes_obj'  => $this->attributes,
             'defaultOnNull'   => $this->getDefaultOnNull(),
             'isResettable'    => $this->isResettable(),
-            'resettableName'  => Str::beforeLast($this->elementName ?: $this->formatName($this->column), '[value]').'[inherit]',
+            'resettableName'  => Str::beforeLast($this->getElementName(), '[value]').'[inherit]',
         ]);
     }
 
