@@ -12,15 +12,16 @@ class Icon extends Text
 
     public function render()
     {
+        $showClass = str_replace(['[', ']'], '-', $this->getElementName());
         $this->script = <<<JS
 
 new Iconpicker(document.querySelector('[name="{$this->getElementName()}"]'),{
-    showSelectedIn: document.querySelector("{$this->getElementClassSelector()}-icon"),
+    showSelectedIn: document.querySelector(".{$showClass}-icon"),
     defaultValue: '{$this->value}',
 });
 JS;
 
-        $this->prepend('<span class="'.substr($this->getElementClassSelector(), 1).'-icon"><i class="'.$this->value.'"></i></span>');
+        $this->prepend('<span class="'.$showClass.'-icon"><i class="'.$this->value.'"></i></span>');
         $this->style('max-width', '160px');
 
         return parent::render();
