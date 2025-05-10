@@ -468,3 +468,12 @@ body .choices {
         border-bottom-left-radius: 0.3rem;
         border-bottom-right-radius: 0.3rem;
     }
+
+#clr-picker {
+    z-index: 1060;
+}
+
+.table-with-fields tbody .form-group [class*=col-]:not(.form-label) {
+    width: 100%;
+    display: inline;
+}
