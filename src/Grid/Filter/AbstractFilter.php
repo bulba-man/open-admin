@@ -94,6 +94,18 @@ abstract class AbstractFilter
     protected $ignore = false;
 
     /**
+     * Width for label and field.
+     *
+     * @var array
+     */
+    protected array $width = [
+        'label' => 2,
+        'field' => 8,
+    ];
+
+    protected $inline = true;
+
+    /**
      * AbstractFilter constructor.
      *
      * @param $column
@@ -116,6 +128,24 @@ abstract class AbstractFilter
     protected function setupDefaultPresenter()
     {
         $this->setPresenter(new Text($this->label));
+    }
+
+    /**
+     * Set width for field and label.
+     *
+     * @param int $field
+     * @param int $label
+     *
+     * @return $this
+     */
+    public function setWidth($field = 8, $label = 2): self
+    {
+        $this->width = [
+            'label' => $label,
+            'field' => $field,
+        ];
+
+        return $this;
     }
 
     /**
@@ -509,6 +539,7 @@ abstract class AbstractFilter
             'label'     => $this->label,
             'value'     => $this->value ?: $this->defaultValue,
             'presenter' => $this->presenter(),
+            'width'     => $this->width,
         ], $this->presenter()->variables());
     }
 

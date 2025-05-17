@@ -3,7 +3,7 @@
         <div class="table-responsive" autocomplete="off">
             <table class="table grid-table table-sm table-hover select-table" id="{{ $grid->tableID }}">
 
-                <thead>
+                <thead class="@if($grid->option('header_dark'))table-dark @endif">
                     <tr>
                         @foreach($grid->visibleColumns() as $column)
                         <th {!! $column->formatHtmlAttributes() !!}>{!! $column->getLabel() !!}{!! $column->renderHeader() !!}</th>

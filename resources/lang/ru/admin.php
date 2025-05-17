@@ -92,11 +92,14 @@ return [
     'time'                  => 'Время',
     'size'                  => 'Размер',
     'listbox'               => [
+        'title_available'    => 'Доступные',
+        'title_selected'     => 'Выбранные',
         'text_total'         => 'Все: {0}',
         'text_empty'         => 'Пустой список',
         'filtered'           => '{0} / {1}',
         'filter_clear'       => 'Показать все',
         'filter_placeholder' => 'Фильтр',
+        'search_placeholder'  => 'Поиск',
     ],
     'grid_items_selected'    => '{n} элементов выбрано',
 
@@ -104,4 +107,9 @@ return [
     'prev'                   => 'Предыдущая',
     'next'                   => 'Следующая',
     'quick_create'           => 'Быстрое добавление',
+    'css_classes'            => 'Css Классы',
+    'open_by_ajax'           => 'Открыть через Ajax',
+    'menu_form'              => [
+        'slug_help' => 'Используется для упрощения поиска'
+    ],
 ];

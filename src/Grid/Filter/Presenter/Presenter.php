@@ -48,6 +48,21 @@ abstract class Presenter
     }
 
     /**
+     * Set width for field and label.
+     *
+     * @param int $field
+     * @param int $label
+     *
+     * @return $this
+     */
+    public function setWidth(int $field = 8, int $label = 2): self
+    {
+        $this->filter->setWidth($field, $label);
+
+        return $this;
+    }
+
+    /**
      * Blade template variables for this presenter.
      *
      * @return array

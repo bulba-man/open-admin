@@ -75,16 +75,17 @@ class ListField extends Field
      */
     protected function setupScript()
     {
+        $selector = str_replace(' ', '.', $this->getElementClassString());
         $this->script = <<<JS
 
-        document.querySelector('.{$this->column}-add').addEventListener('click', function () {
-            var tpl = document.querySelector('template.{$this->column}-tpl').innerHTML;
+        document.querySelector('.{$selector}-add').addEventListener('click', function () {
+            var tpl = document.querySelector('template.{$selector}-tpl').innerHTML;
             var clone = htmlToElement(tpl);
-            document.querySelector('tbody.list-{$this->column}-table').appendChild(clone);
+            document.querySelector('tbody.list-{$selector}-table').appendChild(clone);
         });
 
-        document.querySelector('tbody.list-{$this->column}-table').addEventListener('click', function (event) {
-            if (event.target.classList.contains('{$this->column}-remove')){
+        document.querySelector('tbody.list-{$selector}-table').addEventListener('click', function (event) {
+            if (event.target.classList.contains('{$selector}-remove')){
                 event.target.closest('tr').remove();
             }
         });

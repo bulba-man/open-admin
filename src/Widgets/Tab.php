@@ -48,9 +48,11 @@ class Tab extends Widget implements Renderable
             $this->data['active'] = count($this->data['tabs']);
         }
 
+        $ref = $id ?: $title;
+
         $this->data['tabs'][] = [
             'id'      => $id ?: mt_rand(),
-            'ref'     => is_numeric($title) ? '_'.$title : $title,
+            'ref'     => is_numeric($ref) ? '_'.$ref : $ref,
             'title'   => $title,
             'content' => $content,
             'type'    => static::TYPE_CONTENT,

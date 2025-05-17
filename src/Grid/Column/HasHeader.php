@@ -74,6 +74,10 @@ trait HasHeader
     protected function addFilter($type = null, $formal = null)
     {
         if (is_array($type)) {
+            if ($formal == 'radio') {
+                return $this->addHeader(new RadioFilter($type));
+            }
+
             return $this->addHeader(new CheckFilter($type));
         }
 

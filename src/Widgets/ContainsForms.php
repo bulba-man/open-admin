@@ -22,6 +22,13 @@ trait ContainsForms
         return $tab->buildTabbedForms($forms, $active);
     }
 
+    public static function loadedForms($forms, $active = null)
+    {
+        $tab = new static();
+
+        return $tab->addTabbedForms($forms, $active);
+    }
+
     /**
      * @param array $forms
      * @param null  $active
@@ -46,7 +53,23 @@ trait ContainsForms
             $form = app()->make($class);
 
             $setActive = ($name == $active);
-            $this->add($form->title(), $form->unbox(), $setActive);
+            $this->add($form->getTitle(), $form->unbox(), $setActive);
+        }
+
+        return $this;
+    }
+
+    protected function addTabbedForms($forms, $active = null)
+    {
+        $active = $active ?: request($this->activeName);
+
+        if (!isset($forms[$active])) {
+            $active = key($forms);
+        }
+
+        foreach ($forms as $name => $form) {
+            $setActive = ($name == $active);
+            $this->add($form->getTitle(), $form->unbox(), $setActive);
         }
 
         return $this;

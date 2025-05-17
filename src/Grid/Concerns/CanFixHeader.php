@@ -22,10 +22,12 @@ trait CanFixHeader
 }
 
 .grid-table thead tr:first-child th {
-    background: white;
     position: sticky;
     top: 0;
     z-index: 1;
+}
+.grid-table thead:not(.table-dark) tr:first-child th {
+    background: white;
 }
 STYLE
         );

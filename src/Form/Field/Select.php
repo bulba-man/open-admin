@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 use OpenAdmin\Admin\Form\Field\Traits\CanCascadeFields;
 
 class Select extends Field
@@ -47,8 +48,26 @@ class Select extends Field
         // remote options
         if (is_string($options)) {
             // reload selected
-            if (class_exists($options) && in_array(Model::class, class_parents($options))) {
-                return $this->model(...func_get_args());
+            if (class_exists($options)) {
+                if (in_array(Model::class, class_parents($options))) {
+                    return $this->model(...func_get_args());
+                }
+
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    $this->options = $class->toOptionArray();
+
+                    return $this;
+                }
+            }
+
+            $arr = json_decode($options, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->options = $arr;
+
+                return $this;
             }
 
             return $this->loadRemoteOptions(...func_get_args());
@@ -349,6 +368,7 @@ JS;
 
         if (!$this->native && $this->allowedChoicesJs()) {
             $this->script .= 'var '.$this->choicesObjName()." = new Choices('{$this->getElementClassSelector()}',{$configs});";
+            $this->script .= "\r\nif(!window.choices_vars) {window.choices_vars = []}\r\nwindow.choices_vars['{$this->choicesObjName()}'] = {$this->choicesObjName()};\r\n";
             $this->script .= $this->additional_script;
         }
 

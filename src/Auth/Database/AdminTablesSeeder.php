@@ -78,6 +78,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Dashboard',
                 'icon'      => 'icon-chart-bar',
                 'uri'       => '/',
+                'slug'      => 'dashboard',
             ],
             [
                 'parent_id' => 0,
@@ -85,6 +86,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Admin',
                 'icon'      => 'icon-server',
                 'uri'       => '',
+                'slug'       => 'admin',
             ],
             [
                 'parent_id' => 2,
@@ -92,6 +94,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Users',
                 'icon'      => 'icon-users',
                 'uri'       => 'auth/users',
+                'slug'       => 'users',
             ],
             [
                 'parent_id' => 2,
@@ -99,6 +102,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Roles',
                 'icon'      => 'icon-user',
                 'uri'       => 'auth/roles',
+                'slug'       => 'roles',
             ],
             [
                 'parent_id' => 2,
@@ -106,6 +110,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Permission',
                 'icon'      => 'icon-ban',
                 'uri'       => 'auth/permissions',
+                'slug'       => 'permissions',
             ],
             [
                 'parent_id' => 2,
@@ -113,6 +118,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Menu',
                 'icon'      => 'icon-bars',
                 'uri'       => 'auth/menu',
+                'slug'       => 'menu',
             ],
             [
                 'parent_id' => 2,
@@ -120,6 +126,7 @@ class AdminTablesSeeder extends Seeder
                 'title'     => 'Operation log',
                 'icon'      => 'icon-history',
                 'uri'       => 'auth/logs',
+                'slug'       => 'logs',
             ],
         ]);
 

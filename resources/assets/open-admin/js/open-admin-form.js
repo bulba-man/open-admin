@@ -12,6 +12,7 @@ admin.form = {
         this.footer();
         this.tabs();
         this.initValidation();
+        this.resettable();
     },
 
     addSaveCallback: function (callback) {
@@ -19,9 +20,11 @@ admin.form = {
     },
 
     beforeSave: function () {
-        for (i in this.beforeSaveCallbacks) {
-            var callback = this.beforeSaveCallbacks[i];
-            callback();
+        if (this.beforeSaveCallbacks.length) {
+            for (i in this.beforeSaveCallbacks) {
+                var callback = this.beforeSaveCallbacks[i];
+                callback();
+            }
         }
     },
 
@@ -160,5 +163,11 @@ admin.form = {
             admin.form.check_tab_errors();
         }
         return res;
+    },
+
+    resettable: function () {
+        document.querySelectorAll('.reset-field-to-default').forEach((check) => {
+            new ResettableField(check);
+        });
     },
 };

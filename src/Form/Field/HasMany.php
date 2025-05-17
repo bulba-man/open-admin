@@ -98,6 +98,7 @@ class HasMany extends Field
         $this->relationName = $relationName;
 
         $this->column = $relationName;
+        $this->id = $this->formatId($relationName);
 
         if (count($arguments) == 1) {
             $this->label = $this->formatLabel();
@@ -512,17 +513,17 @@ class HasMany extends Field
          */
         $script = <<<JS
 var index = 0;
-document.querySelector('#has-many-{$this->column} .add').addEventListener("click", function () {
+document.querySelector('#has-many-{$this->id} .add').addEventListener("click", function () {
     index++;
 
-    var tpl = document.querySelector('template.{$this->column}-tpl').innerHTML;
+    var tpl = document.querySelector('template.{$this->id}-tpl').innerHTML;
     tpl = tpl.replace(/{$defaultKey}/g, index);
     var clone = htmlToElement(tpl);
-    addRemoveHasManyListener{$this->column}(clone.querySelector('.remove'));
-    document.querySelector('.has-many-{$this->column}-forms').appendChild(clone);
+    addRemoveHasManyListener{$this->getJSSelector()}(clone.querySelector('.remove'));
+    document.querySelector('.has-many-{$this->id}-forms').appendChild(clone);
 
-    if (typeof(addHasManyTab{$this->column}) == 'function'){
-        addHasManyTab{$this->column}(index);
+    if (typeof(addHasManyTab{$this->getJSSelector()}) == 'function'){
+        addHasManyTab{$this->getJSSelector()}(index);
     }
 
     {$templateScript}
@@ -530,19 +531,19 @@ document.querySelector('#has-many-{$this->column} .add').addEventListener("click
 
 });
 
-document.querySelectorAll('#has-many-{$this->column} .remove').forEach(remove => {
-    addRemoveHasManyListener{$this->column}(remove);
+document.querySelectorAll('#has-many-{$this->id} .remove').forEach(remove => {
+    addRemoveHasManyListener{$this->getJSSelector()}(remove);
 });
 
-function addRemoveHasManyListener{$this->column}(remove){
+function addRemoveHasManyListener{$this->getJSSelector()}(remove){
     remove.addEventListener("click", function () {
-        let form = this.closest('.has-many-{$this->column}-form');
-        if (typeof(removeHasManyTab{$this->column}) == 'function'){
-            removeHasManyTab{$this->column}();
+        let form = this.closest('.has-many-{$this->id}-form');
+        if (typeof(removeHasManyTab{$this->getJSSelector()}) == 'function'){
+            removeHasManyTab{$this->getJSSelector()}();
         }
         form.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
-        hide(this.closest('.has-many-{$this->column}-form'));
-        this.closest('.has-many-{$this->column}-form').querySelector('.$removeClass').value = 1;
+        hide(this.closest('.has-many-{$this->id}-form'));
+        this.closest('.has-many-{$this->id}-form').querySelector('.$removeClass').value = 1;
 
         return false;
     });
@@ -568,20 +569,20 @@ JS;
         $this->setupScriptForDefaultView($templateScript);
 
         $script = <<<EOT
-        function removeHasManyTab{$this->column}(){
-            document.querySelector('#has-many-{$this->column} .nav-link.active').parentNode.remove();
-            let trigger = document.querySelector('#has-many-{$this->column} .nav-link:first-child');
+        function removeHasManyTab{$this->getJSSelector()}(){
+            document.querySelector('#has-many-{$this->id} .nav-link.active').parentNode.remove();
+            let trigger = document.querySelector('#has-many-{$this->id} .nav-link:first-child');
             console.log(trigger);
             if (trigger){
                 bootstrap.Tab.getOrCreateInstance(trigger).show();
             }
         }
-        function addHasManyTab{$this->column}(index){
-            let tpl = document.querySelector('template.{$this->column}-tab-tpl').innerHTML;
+        function addHasManyTab{$this->getJSSelector()}(index){
+            let tpl = document.querySelector('template.{$this->id}-tab-tpl').innerHTML;
             tpl = tpl.replace(/{$defaultKey}/g, index);
             let clone = htmlToElement(tpl);
-            let addTab = document.querySelector('.has-many-{$this->column} .add-tab')
-            document.querySelector('.has-many-{$this->column} > .nav').insertBefore(clone,addTab);
+            let addTab = document.querySelector('.has-many-{$this->id} .add-tab')
+            document.querySelector('.has-many-{$this->id} > .nav').insertBefore(clone,addTab);
             bootstrap.Tab.getOrCreateInstance(clone.querySelector("a")).show();
         }
 
@@ -608,6 +609,11 @@ EOT;
         // no extra's needed
     }
 
+    protected function getJSSelector()
+    {
+        return Str::camel($this->getElementClassString());
+
+    }
     /**
      * Disable create button.
      *
@@ -684,13 +690,13 @@ EOT;
         $this->addSortable('.has-many-', '-forms');
 
         /* @var Field $field */
-        foreach ($this->buildNestedForm($this->column, $this->builder)->fields() as $field) {
+        foreach ($this->buildNestedForm($this->column, $this->builder)->fields() as $i => $field) {
             if (is_a($field, Hidden::class)) {
                 $hidden[] = $field->render();
             } else {
                 /* Hide label and set field width 100% */
                 $field->setLabelClass(['hidden']);
-                $field->setWidth(12, 0);
+//                $field->setWidth(12, 0);
                 $fields[] = $field->render();
                 $headers[] = $field->label();
             }

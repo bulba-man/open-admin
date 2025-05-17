@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
 
 /**
@@ -65,6 +66,8 @@ class Field implements Renderable
      */
     protected $default_on_empty;
 
+    protected $default_on_null;
+
     /**
      * Element label.
      *
@@ -84,7 +87,7 @@ class Field implements Renderable
      *
      * @var string
      */
-    protected $elementName = [];
+    protected $elementName = '';
 
     /**
      * Form element classes.
@@ -218,6 +221,7 @@ class Field implements Renderable
     protected $width = [
         'label' => 2,
         'field' => 8,
+        'reset' => 2,
     ];
 
     /**
@@ -272,6 +276,11 @@ class Field implements Renderable
      * @var bool
      */
     public $isJsonType = false;
+
+    /**
+     * @var mixed|true
+     */
+    protected bool $resettable = false;
 
     /**
      * Field constructor.
@@ -366,7 +375,7 @@ class Field implements Renderable
             }
 
             if (count($name) === 1) {
-                return $name[0];
+                return ($this->isResettable()) ? $name[0].'[value]' : $name[0];
             }
 
             $html = array_shift($name);
@@ -374,7 +383,7 @@ class Field implements Renderable
                 $html .= "[$piece]";
             }
 
-            return $html;
+            return ($this->isResettable()) ? $html.'[value]' : $html;
         }
 
         if (is_array($this->column)) {
@@ -403,6 +412,11 @@ class Field implements Renderable
         $this->elementName = $name;
 
         return $this;
+    }
+
+    public function getElementName()
+    {
+        return $this->elementName ?: $this->formatName($this->column);
     }
 
     /**
@@ -508,14 +522,16 @@ class Field implements Renderable
      *
      * @param int $field
      * @param int $label
+     * @param int $reset
      *
      * @return $this
      */
-    public function setWidth($field = 8, $label = 2): self
+    public function setWidth(int $field = 8, int $label = 2, int $reset = 2): self
     {
         $this->width = [
             'label' => $label,
             'field' => $field,
+            'reset' => $reset,
         ];
 
         return $this;
@@ -532,6 +548,26 @@ class Field implements Renderable
     {
         if ($options instanceof Arrayable) {
             $options = $options->toArray();
+        }
+
+        if (is_string($options)) {
+            if (class_exists($options)) {
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    $this->options = $class->toOptionArray();
+
+                    return $this;
+                }
+            } else {
+                $arr = json_decode($options, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $this->options = $arr;
+
+                    return $this;
+                }
+            }
         }
 
         $this->options = array_merge($this->options, $options);
@@ -861,6 +897,13 @@ class Field implements Renderable
         return $this;
     }
 
+    public function setValue($value = null)
+    {
+        $this->value = $value;
+
+        return $this;
+    }
+
     /**
      * Set or get data.
      *
@@ -921,6 +964,13 @@ class Field implements Renderable
         return $this;
     }
 
+    public function defaultOnNull($default_on_null): self
+    {
+        $this->default_on_null = $default_on_null;
+
+        return $this;
+    }
+
     /**
      * Get defaultOnEmpty value.
      *
@@ -933,6 +983,15 @@ class Field implements Renderable
         }
 
         return $this->default_on_empty;
+    }
+
+    public function getDefaultOnNull()
+    {
+        if ($this->default_on_null instanceof \Closure) {
+            return call_user_func($this->default_on_null, $this->form);
+        }
+
+        return $this->default_on_null;
     }
 
     /**
@@ -1205,7 +1264,7 @@ class Field implements Renderable
      */
     public function getPlaceholder()
     {
-        return $this->placeholder ?: trans('admin.input').' '.$this->label;
+        return $this->placeholder ?: $this->label;
     }
 
     /**
@@ -1229,6 +1288,10 @@ class Field implements Renderable
      */
     public function prepare($value)
     {
+        if ($value === null && $this->default_on_null) {
+            $value = $this->getDefaultOnNull();
+        }
+
         if (empty($value) && $this->default_on_empty) {
             $value = $this->getDefaultOnEmpty();
         }
@@ -1291,11 +1354,12 @@ class Field implements Renderable
             return [
                 'label'      => "col-sm-{$this->width['label']} {$this->getLabelClass()}",
                 'field'      => "col-sm-{$this->width['field']}",
+                'reset'      => "col-sm-{$this->width['reset']}",
                 'form-group' => $this->getGroupClass(true),
             ];
         }
 
-        return ['label' => $this->getLabelClass(), 'field' => '', 'form-group' => ''];
+        return ['label' => $this->getLabelClass(), 'field' => '', 'form-group' => '', 'reset' => ''];
     }
 
     /**
@@ -1495,6 +1559,24 @@ class Field implements Renderable
     }
 
     /**
+     * Field can be reset to default value
+     *
+     * @param bool $resettable
+     * @return $this
+     */
+    public function resettable(bool $resettable = true): static
+    {
+        $this->resettable = $resettable;
+
+        return $this;
+    }
+
+    public function isResettable(): bool
+    {
+        return $this->resettable && $this->getDefaultOnNull() !== null;
+    }
+
+    /**
      * Get the view variables of this field.
      *
      * @return array
@@ -1503,12 +1585,13 @@ class Field implements Renderable
     {
         return array_merge($this->variables, [
             'id'              => $this->id,
-            'name'            => $this->elementName ?: $this->formatName($this->column),
+            'name'            => $this->getElementName(),
             'help'            => $this->help,
             'inline'          => $this->inline,
             'showAsSection'   => $this->showAsSection,
             'class'           => $this->getElementClassString(),
             'value'           => $this->value(),
+            'defaultValue'    => $this->getDefault(),
             'label'           => $this->label,
             'viewClass'       => $this->getViewElementClasses(),
             'column'          => $this->column,
@@ -1516,6 +1599,9 @@ class Field implements Renderable
             'attributes'      => $this->formatAttributes(),
             'placeholder'     => $this->getPlaceholder(),
             'attributes_obj'  => $this->attributes,
+            'defaultOnNull'   => $this->getDefaultOnNull(),
+            'isResettable'    => $this->isResettable(),
+            'resettableName'  => Str::beforeLast($this->getElementName(), '[value]').'[inherit]',
         ]);
     }
 
@@ -1658,6 +1744,6 @@ class Field implements Renderable
      */
     public function __toString()
     {
-        return $this->render()->render();
+        return $this->render();
     }
 }

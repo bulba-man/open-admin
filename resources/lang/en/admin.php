@@ -103,6 +103,7 @@ return [
         'filtered'            => '{0} / {1}',
         'filter_clear'        => 'Show all',
         'filter_placeholder'  => 'Filter',
+        'search_placeholder'   => 'Search',
     ],
     'grid_items_selected'    => '{n} items selected',
 
@@ -110,4 +111,9 @@ return [
     'prev'                   => 'Prev',
     'next'                   => 'Next',
     'quick_create'           => 'Quick create',
+    'css_classes'            => 'Css Classes',
+    'open_by_ajax'           => 'Open by Ajax',
+    'menu_form'              => [
+        'slug_help' => 'Used to make searching easier'
+    ],
 ];

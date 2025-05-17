@@ -1,10 +1,10 @@
 @if(Admin::user()->visible(\Illuminate\Support\Arr::get($item, 'roles', [])) && Admin::user()->can(\Illuminate\Support\Arr::get($item, 'permission')))
     @if(!isset($item['children']))
-        <li>
+        <li class="{{$item['classes']}}">
             @if(url()->isValidUrl($item['uri']))
                 <a href="{{ $item['uri'] }}" target="_blank">
             @else
-                 <a href="{{ admin_url($item['uri']) }}">
+                 <a class="{{(isset($item['ajax'])&&!$item['ajax']) ? 'no-ajax' : '' }}" href="{{ admin_url($item['uri']) }}">
             @endif
                 <i class="{{$item['icon']}}"></i>
                 @if (Lang::has($titleTranslation = 'admin.menu_titles.' . trim(str_replace(' ', '_', strtolower($item['title'])))))

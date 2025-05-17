@@ -150,6 +150,11 @@ class Form implements Renderable
         return $this;
     }
 
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
     /**
      * Get form description.
      *
@@ -340,6 +345,11 @@ class Form implements Renderable
      */
     public function validate(Request $request)
     {
+        return $this->validateData($request->all());
+    }
+
+    public function validateData(array $data)
+    {
         if (method_exists($this, 'form')) {
             $this->form();
         }
@@ -348,7 +358,7 @@ class Form implements Renderable
 
         /** @var Field $field */
         foreach ($this->fields() as $field) {
-            if (!$validator = $field->getValidator($request->all())) {
+            if (!$validator = $field->getValidator($data)) {
                 continue;
             }
 
@@ -383,16 +393,17 @@ class Form implements Renderable
     /**
      * Add a fieldset to form.
      *
-     * @param string  $title
+     * @param string $title
      * @param Closure $setCallback
-     *
+     * @param bool $collapsed
+     * @param bool $hideLink
      * @return Field\Fieldset
      */
-    public function fieldset(string $title, Closure $setCallback)
+    public function fieldset(string $title, Closure $setCallback, $collapsed = true, $hideLink = false)
     {
         $fieldset = new Field\Fieldset();
 
-        $this->html($fieldset->start($title))->plain();
+        $this->html($fieldset->start($title, $collapsed, $hideLink))->plain();
 
         $setCallback($this);
 

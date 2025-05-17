@@ -12,6 +12,15 @@ admin.action = {}; // actions
 
 document.addEventListener('DOMContentLoaded', function () {
     admin.init();
+
+    let modalPromptNode = document.getElementById('modalPrompt');
+    if (modalPromptNode) {
+        promptShell.init(document.getElementById('modalPrompt'))
+        window.prompt_native = window.prompt;
+        window.prompt = function prompt(data) {
+            promptShell.load(data);
+        }
+    }
 });
 
 admin.init = function () {

@@ -32,13 +32,13 @@
         FileUpload_{{$name}}.addFileFromUrl(url);
 
         @if (empty($multiple))
-            admin.selectable.hideModal();
+        admin.selectable.hideModal();
         @else
-            admin.toast("File added");
+        admin.toast("File added");
         @endif
     }
 
-    var url = "/admin/media?select=true&fn=setFile{{$selector}}{!!$picker_path!!}";
+    var url = "{{ route('media-index') }}?select=true&fn=setFile{{$selector}}{!!$picker_path!!}";
     var config = {
         url : url,
         modal_elm : document.querySelector('#{{$modal}}'),

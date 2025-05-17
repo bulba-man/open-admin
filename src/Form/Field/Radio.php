@@ -4,6 +4,7 @@ namespace OpenAdmin\Admin\Form\Field;
 
 use Illuminate\Contracts\Support\Arrayable;
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 use OpenAdmin\Admin\Form\Field\Traits\CanCascadeFields;
 
 class Radio extends Field
@@ -28,6 +29,26 @@ class Radio extends Field
     {
         if ($options instanceof Arrayable) {
             $options = $options->toArray();
+        }
+
+        if (is_string($options)) {
+            if (class_exists($options)) {
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    $this->options = $class->toOptionArray();
+
+                    return $this;
+                }
+            }
+
+            $arr = json_decode($options, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->options = $arr;
+
+                return $this;
+            }
         }
 
         $this->options = (array) $options;

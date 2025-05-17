@@ -98,7 +98,8 @@ trait HasAssets
         'vendor/open-admin/open-admin/js/open-admin-resource.js',
         'vendor/open-admin/open-admin/js/open-admin-tree.js',
         'vendor/open-admin/open-admin/js/open-admin-selectable.js',
-
+        'vendor/open-admin/open-admin/js/open-admin-prompt.js',
+        'vendor/open-admin/open-admin/js/open-admin-resettable.js',
     ];
 
     /**

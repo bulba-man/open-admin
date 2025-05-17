@@ -4,10 +4,10 @@
         @foreach ($tabs as $i => $tab)
             @if ($tab['type'] == \OpenAdmin\Admin\Widgets\Tab::TYPE_CONTENT)
                 <li class="nav-item"><a class="nav-link {{ $active === $i ? 'active' : '' }}" href="#{{ $tab['ref'] }}"
-                        data-bs-toggle="tab">{{ $tab['title'] }}</a></li>
+                        data-bs-toggle="tab">{{ $tab['title'] }} <i class="icon-exclamation-circle text-red hide"></i></a></li>
             @elseif($tab['type'] == \OpenAdmin\Admin\Widgets\Tab::TYPE_LINK)
                 <li class="nav-item"><a class="nav-link {{ $active === $i ? 'active' : '' }}"
-                        href="{{ $tab['href'] }}">{{ $tab['title'] }}</a></li>
+                        href="{{ $tab['href'] }}">{{ $tab['title'] }} <i class="icon-exclamation-circle text-red hide"></i></a></li>
             @endif
         @endforeach
 

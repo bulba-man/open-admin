@@ -3,6 +3,7 @@
 namespace OpenAdmin\Admin\Form\Field;
 
 use Illuminate\Contracts\Support\Arrayable;
+use OpenAdmin\Admin\Form\Field\Interfaces\OptionSourceInterface;
 
 class Checkbox extends MultipleSelect
 {
@@ -24,6 +25,26 @@ class Checkbox extends MultipleSelect
     {
         if ($options instanceof Arrayable) {
             $options = $options->toArray();
+        }
+
+        if (is_string($options)) {
+            if (class_exists($options)) {
+                $interfaces = class_implements($options);
+                if (isset($interfaces[OptionSourceInterface::class])) {
+                    /** @var OptionSourceInterface $class */
+                    $class = new $options;
+                    $this->options = $class->toOptionArray();
+
+                    return $this;
+                }
+            }
+
+            $arr = json_decode($options, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->options = $arr;
+
+                return $this;
+            }
         }
 
         if (is_callable($options)) {

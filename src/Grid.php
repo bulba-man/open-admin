@@ -158,6 +158,7 @@ class Grid
         'show_column_selector'   => true,
         'show_define_empty_page' => true,
         'show_perpage_selector'  => true,
+        'header_dark'            => false,
     ];
 
     /**
@@ -487,6 +488,14 @@ class Grid
     public function disablePerPageSelector(bool $disable = true)
     {
         return $this->option('show_perpage_selector', !$disable);
+    }
+
+    /**
+     * @return $this
+     */
+    public function headerDark(): static
+    {
+        return $this->option('header_dark', true);
     }
 
     /**

@@ -3,12 +3,18 @@
     "description": "open-admin. Open-source Laravel Admin panel. No pro or paid package, free & open. Based on laravel-admin, with special thanks to z-song",
     "type": "library",
     "keywords": ["laravel", "admin", "grid", "form", "open-admin","open","free"],
-    "homepage": "https://github.com/open-admin-org/open-admin",
+    "homepage": "https://github.com/bulba-man/open-admin",
     "license": "MIT",
+	"version": "1.1.0",
+    "minimum-stability": "stable",
     "authors": [
         {
             "name": "Sjors Broersen | Open-Admin.org",
             "email": "info@open-admin.org"
+        },
+		{
+            "name": "Mikita Dzmitryievich",
+            "email": "dmitrievichn@gmail.com"
         }
     ],
     "require": {

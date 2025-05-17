@@ -52,6 +52,14 @@
 
     <button id="totop" title="Go to top" style="display: none;"><i class="icon-chevron-up"></i></button>
 
+    @if(config('admin.use_custom_alerts'))
+        @include('admin::partials.modal-alert')
+    @endif
+
+    @if(config('admin.use_custom_prompts'))
+        @include('admin::partials.modal-prompt')
+    @endif
+
     <script>
         function LA() {}
         LA.token = "{{ csrf_token() }}";
