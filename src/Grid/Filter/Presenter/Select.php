@@ -104,7 +104,7 @@ class Select extends Presenter
             'removeItemButton'   => true,
             'allowHTML'          => true,
             'classNames'         => [
-                'containerOuter' => 'choices '.$this->getElementClass(),
+                'containerOuter' => ['choices', $this->getElementClass()],
             ],
         ], $this->config);
         $configs = json_encode($configs);
