@@ -116,4 +116,9 @@ return [
     'menu_form'              => [
         'slug_help' => 'Used to make searching easier'
     ],
+    'restore'               => 'Restore',
+    'restore_confirm'       => 'Are you sure you want to restore?',
+    'restore_succeeded'     => 'Restore succeeded !',
+    'restore_failed'        => 'Restore failed !',
+    'batch_restore'         => 'Batch restore',
 ];
