@@ -7,6 +7,7 @@ use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Grid\Actions\Delete;
 use OpenAdmin\Admin\Grid\Actions\Edit;
 use OpenAdmin\Admin\Grid\Actions\Show;
+use OpenAdmin\Admin\Grid\Actions\Restore;
 use OpenAdmin\Admin\Grid\Displayers\AbstractDisplayer;
 
 class Actions extends AbstractDisplayer
@@ -153,6 +154,12 @@ class Actions extends AbstractDisplayer
     protected function prependDefaultActions()
     {
         foreach ($this->defaultClass as $class) {
+            if ($class == Restore::class) {
+                if (!method_exists($this->row,'trashed') || !$this->row->trashed()) {
+                    continue;
+                }
+            }
+
             /** @var RowAction $action */
             $action = new $class();
 
@@ -226,6 +233,24 @@ class Actions extends AbstractDisplayer
             array_delete($this->defaultClass, Edit::class);
         } elseif (!in_array(Edit::class, $this->defaultClass)) {
             array_push($this->defaultClass, Edit::class);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Enable restore.
+     *
+     * @param bool $enable
+     *
+     * @return $this
+     */
+    public function enableRestore(bool $enable = true)
+    {
+        if (!$enable) {
+            array_delete($this->defaultClass, Restore::class);
+        } elseif (!in_array(Restore::class, $this->defaultClass)) {
+            array_push($this->defaultClass, Restore::class);
         }
 
         return $this;

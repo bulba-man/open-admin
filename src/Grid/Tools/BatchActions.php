@@ -26,6 +26,11 @@ class BatchActions extends AbstractTool
     /**
      * @var bool
      */
+    protected $enableRestore = false;
+
+    /**
+     * @var bool
+     */
     private $holdAll = false;
 
     /**
@@ -69,6 +74,18 @@ class BatchActions extends AbstractTool
     public function disableDelete(bool $disable = true)
     {
         $this->enableDelete = !$disable;
+
+        return $this;
+    }
+
+    /**
+     * Enable restore.
+     *
+     * @return $this
+     */
+    public function enableRestore(bool $enable = true)
+    {
+        $this->enableRestore = $enable;
 
         return $this;
     }
@@ -147,6 +164,10 @@ class BatchActions extends AbstractTool
             $this->actions = $this->actions->filter(function ($action, $key) {
                 return get_class($action) != "OpenAdmin\Admin\Grid\Tools\BatchDelete";
             });
+        }
+
+        if ($this->enableRestore) {
+            $this->add(new BatchRestore());
         }
 
         $this->addActionScripts();
