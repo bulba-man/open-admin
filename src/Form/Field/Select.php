@@ -75,6 +75,7 @@ class Select extends Field
                 return $this;
             }
 
+            $this->options = [];
             return $this->loadRemoteOptions(...func_get_args());
         }
 
@@ -222,12 +223,18 @@ JS;
             'allowHTML'          => true,
         ], $this->config);
 
+        if(!isset($parameters['selected']) && !is_null($this->value())) {
+            $parameters['selected'] = $this->value();
+        }
+
         $parameters_json = json_encode($parameters);
 
         $this->additional_script .= <<<JS
+document.addEventListener('DOMContentLoaded', function () {
         admin.ajax.post("{$url}",{$parameters_json},function(data){
             {$this->choicesObjName()}.setChoices(data.data, 'id', 'text', true);
         });
+});
 JS;
 
         return $this;
@@ -370,6 +377,15 @@ JS;
      */
     public function render()
     {
+        if ($this->options instanceof \Closure) {
+            if ($this->form) {
+                $this->options = $this->options->bindTo($this->form->model());
+            }
+            $this->options(call_user_func($this->options, $this->value, $this));
+        }
+
+        $this->options = array_filter($this->options, 'strlen');
+
         $configs = array_merge([
             'removeItems'        => true,
             'removeItemButton'   => true,
@@ -395,15 +411,6 @@ JS;
             $this->script .= "\r\nif(!window.choices_vars) {window.choices_vars = []}\r\nwindow.choices_vars['{$this->choicesObjName()}'] = {$this->choicesObjName()};\r\n";
             $this->script .= $this->additional_script;
         }
-
-        if ($this->options instanceof \Closure) {
-            if ($this->form) {
-                $this->options = $this->options->bindTo($this->form->model());
-            }
-            $this->options(call_user_func($this->options, $this->value, $this));
-        }
-
-        $this->options = array_filter($this->options, 'strlen');
 
         $this->addVariables([
             'options' => $this->options,
