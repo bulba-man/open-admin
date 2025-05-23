@@ -37,6 +37,11 @@ class Select extends Field
     public $additional_script = '';
 
     /**
+     * @var bool
+     */
+    protected $emptyOption = true;
+
+    /**
      * Set options.
      *
      * @param array|callable|string $options
@@ -279,6 +284,19 @@ JS;
         return $this;
     }
 
+
+    /**
+     * Set selectbox without empty option.
+     *
+     * @return $this
+     */
+    public function hideEmpty(): static
+    {
+        $this->emptyOption = false;
+
+        return $this;
+    }
+
     /**
      * Set use browser native selectbox.
      *
@@ -384,6 +402,7 @@ JS;
         $this->addVariables([
             'options' => $this->options,
             'groups'  => $this->groups,
+            'emptyOption'   => $this->emptyOption,
         ]);
 
         $this->addCascadeScript();

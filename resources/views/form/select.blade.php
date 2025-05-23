@@ -14,7 +14,7 @@
                     </optgroup>
                 @endforeach
              @else
-                <option value=""></option>
+                @if($emptyOption)<option value=""></option>@endif
                 @foreach($options as $select => $option)
                     <option value="{{$select}}" {{ $select == old($column, $value) ?'selected':'' }}>{{$option}}</option>
                 @endforeach
