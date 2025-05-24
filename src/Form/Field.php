@@ -1583,6 +1583,14 @@ class Field implements Renderable
      */
     public function variables(): array
     {
+        $resettableName = $this->getElementName();
+        if (is_array($resettableName)) {
+            foreach ($resettableName as $i => $name) {
+                $resettableName[$i] = Str::beforeLast($name, '[value]').'[inherit]';
+            }
+        } else {
+            $resettableName = Str::beforeLast($resettableName, '[value]').'[inherit]';
+        }
         return array_merge($this->variables, [
             'id'              => $this->id,
             'name'            => $this->getElementName(),
@@ -1601,7 +1609,7 @@ class Field implements Renderable
             'attributes_obj'  => $this->attributes,
             'defaultOnNull'   => $this->getDefaultOnNull(),
             'isResettable'    => $this->isResettable(),
-            'resettableName'  => Str::beforeLast($this->getElementName(), '[value]').'[inherit]',
+            'resettableName'  => $resettableName,
         ]);
     }
 
