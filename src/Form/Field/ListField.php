@@ -79,9 +79,7 @@ class ListField extends Field
         $this->script = <<<JS
 
         document.querySelector('.{$selector}-add').addEventListener('click', function () {
-            var tpl = document.querySelector('template.{$selector}-tpl').innerHTML;
-            var clone = htmlToElement(tpl);
-            document.querySelector('tbody.list-{$selector}-table').appendChild(clone);
+            addNewElementToList_{$selector}();
         });
 
         document.querySelector('tbody.list-{$selector}-table').addEventListener('click', function (event) {
@@ -89,6 +87,58 @@ class ListField extends Field
                 event.target.closest('tr').remove();
             }
         });
+
+        document.querySelectorAll('tbody.list-{$selector}-table input').forEach(elem => {
+            addEnterListFieldListener_{$selector}(elem);
+        });
+
+        function addNewElementToList_{$selector}() {
+            var tpl = document.querySelector('template.{$selector}-tpl').innerHTML;
+            var clone = htmlToElement(tpl);
+            clone.querySelectorAll('input').forEach(elem => {
+                addEnterListFieldListener_{$selector}(elem);
+            });
+            document.querySelector('tbody.list-{$selector}-table').appendChild(clone);
+            var input = clone.querySelector('input');
+            input.focus();
+            input.setSelectionRange(-1, -1);
+        }
+
+        function addEnterListFieldListener_{$selector}(el){
+            el.addEventListener("keydown", function (event) {
+                /** Enter **/
+                if (event.keyCode == 13) {
+                   event.preventDefault();
+                    var parent = event.target.closest('tr');
+                    var next = parent.nextElementSibling;
+                    if (next && next.nodeName === 'TR') {
+                        var input = next.querySelector('input');
+                        input.focus();
+                        input.setSelectionRange(-1, -1);
+                        return false;
+                    }
+                    addNewElementToList_{$selector}();
+                    return false;
+                }
+
+                /** Delete **/
+                if (event.keyCode == 46) {
+                    if (!event.target.value.length) {
+                        event.preventDefault();
+                        var parent = event.target.closest('tr');
+                        var prev = parent.previousElementSibling;
+                        parent.remove();
+                        if (prev && prev.nodeName === 'TR') {
+                            var input = prev.querySelector('input');
+                            input.focus();
+                            input.setSelectionRange(-1, -1);
+                        }
+                        return false;
+                    }
+                }
+
+            });
+        }
 JS;
     }
 
