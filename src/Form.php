@@ -364,7 +364,7 @@ class Form implements Renderable
 
             $this->model->save();
 
-            $this->updateRelation($this->relations);
+            $this->updateRelation($this->relations, $this->model);
         });
 
         if (($response = $this->callSaved()) instanceof Response) {
@@ -517,7 +517,7 @@ class Form implements Renderable
 
         foreach ($inputs as $column => $value) {
             if ((method_exists($this->model, $column)
-                || method_exists($this->model, $column = Str::camel($column)))
+                    || method_exists($this->model, $column = Str::camel($column)))
                 && !method_exists(Model::class, $column)
             ) {
                 $relation = call_user_func([$this->model, $column]);
@@ -583,7 +583,7 @@ class Form implements Renderable
 
             $this->model->save();
 
-            $this->updateRelation($this->relations);
+            $this->updateRelation($this->relations, $this->model);
         });
 
         if (($result = $this->callSaved()) instanceof Response) {
@@ -742,7 +742,7 @@ class Form implements Renderable
      *
      * @return void
      */
-    protected function updateRelation($relationsData)
+    protected function updateRelation($relationsData, Model $curentModel, $needPrepare = true)
     {
         // makes sure prepared values for relations can be passed
         // for example MultiFile deletions / sortings
@@ -757,18 +757,22 @@ class Form implements Renderable
         }
 
         foreach ($relationsData as $name => $values) {
-            if (!method_exists($this->model, $name)) {
+            if (!method_exists($curentModel, $name)) {
                 continue;
             }
 
-            $relation = $this->model->$name();
+            $relation = $curentModel->$name();
 
             $oneToOneRelation = $relation instanceof Relations\HasOne
                 || $relation instanceof Relations\MorphOne
                 || $relation instanceof Relations\BelongsTo;
 
             $isRelationUpdate = true;
-            $prepared         = $this->prepareUpdate([$name => $values], $oneToOneRelation, $isRelationUpdate);
+            if ($needPrepare) {
+                $prepared = $this->prepareUpdate([$name => $values], $oneToOneRelation, $isRelationUpdate);
+            } else {
+                $prepared = [$name => $values];
+            }
 
             if (empty($prepared)) {
                 continue;
@@ -783,7 +787,7 @@ class Form implements Renderable
                     break;
                 case $relation instanceof Relations\HasOne:
                 case $relation instanceof Relations\MorphOne:
-                    $related = $this->model->getRelationValue($name) ?: $relation->getRelated();
+                    $related = $curentModel->getRelationValue($name) ?: $relation->getRelated();
 
                     foreach ($prepared[$name] as $column => $value) {
                         $related->setAttribute($column, $value);
@@ -794,14 +798,28 @@ class Form implements Renderable
                     break;
                 case $relation instanceof Relations\BelongsTo:
                 case $relation instanceof Relations\MorphTo:
-                    $related = $this->model->getRelationValue($name) ?: $relation->getRelated();
-
+                    $related = $curentModel->getRelationValue($name) ?: $relation->getRelated();
+                    $innerRelations = [];
                     foreach ($prepared[$name] as $column => $value) {
+                        if (method_exists($related, $column)
+                            && !method_exists(Model::class, $column)
+                            && $related->$column() instanceof Relations\Relation
+                        ) {
+                            $innerRelations[] = [$column => $value];
+                            continue;
+                        }
+
                         $related->setAttribute($column, $value);
                     }
 
                     // save parent
                     $related->save();
+
+                    if (count($innerRelations)) {
+                        foreach ($innerRelations as $innerRelation) {
+                            $this->updateRelation($innerRelation, $related, false);
+                        }
+                    }
 
                     // save child (self)
                     $relation->associate($related)->save();
@@ -811,7 +829,7 @@ class Form implements Renderable
                     if (!empty($prepared[$name])) {
                         foreach ($prepared[$name] as $related) {
                             /** @var Relations\HasOneOrMany $relation */
-                            $relation = $this->model->$name();
+                            $relation = $curentModel->$name();
 
                             $keyName = $relation->getRelated()->getKeyName();
 
@@ -981,7 +999,7 @@ class Form implements Renderable
                 $value[$name] = Arr::get($data, $column, false);
             }
 
-            return $value;
+            return (count($value)) ? $value : false;
         }
         // if not found return false
         // false values won't be save

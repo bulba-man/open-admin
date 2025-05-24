@@ -79,7 +79,7 @@ trait BelongsToRelation
 
         $html = <<<HTML
 <div class="modal fade belongsto" id="{$this->modalID}" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content" style="border-radius: 5px;">
       <div class="modal-header">
         <h4 class="modal-title">{$trans['choose']}</h4>

@@ -106,6 +106,12 @@ class Select extends Presenter
             'classNames'         => [
                 'containerOuter' => ['choices', $this->getElementClass()],
             ],
+            'loadingText'       => trans('admin.choices.loadingText'),
+            'noResultsText'     => trans('admin.choices.noResultsText'),
+            'noChoicesText'     => trans('admin.choices.noChoicesText'),
+            'itemSelectText'    => trans('admin.choices.itemSelectText'),
+            'uniqueItemText'    => trans('admin.choices.uniqueItemText'),
+            'customAddItemText' => trans('admin.choices.customAddItemText'),
         ], $this->config);
         $configs = json_encode($configs);
 

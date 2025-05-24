@@ -121,4 +121,13 @@ return [
     'restore_succeeded'     => 'Restore succeeded !',
     'restore_failed'        => 'Restore failed !',
     'batch_restore'         => 'Batch restore',
+
+    'choices'               => [
+        'loadingText'           => 'Loading...',
+        'noResultsText'         => 'No results found',
+        'noChoicesText'         => 'No choices to choose from',
+        'itemSelectText'        => 'Press to select',
+        'uniqueItemText'        => 'Only unique values can be added',
+        'customAddItemText'     => 'Only values matching specific conditions can be added',
+    ],
 ];

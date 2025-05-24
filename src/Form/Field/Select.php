@@ -37,6 +37,11 @@ class Select extends Field
     public $additional_script = '';
 
     /**
+     * @var bool
+     */
+    protected $emptyOption = true;
+
+    /**
      * Set options.
      *
      * @param array|callable|string $options
@@ -70,6 +75,7 @@ class Select extends Field
                 return $this;
             }
 
+            $this->options = [];
             return $this->loadRemoteOptions(...func_get_args());
         }
 
@@ -217,12 +223,18 @@ JS;
             'allowHTML'          => true,
         ], $this->config);
 
+        if(!isset($parameters['selected']) && !is_null($this->value())) {
+            $parameters['selected'] = $this->value();
+        }
+
         $parameters_json = json_encode($parameters);
 
         $this->additional_script .= <<<JS
+document.addEventListener('DOMContentLoaded', function () {
         admin.ajax.post("{$url}",{$parameters_json},function(data){
             {$this->choicesObjName()}.setChoices(data.data, 'id', 'text', true);
         });
+});
 JS;
 
         return $this;
@@ -275,6 +287,19 @@ JS;
     public function useNative()
     {
         $this->native = true;
+
+        return $this;
+    }
+
+
+    /**
+     * Set selectbox without empty option.
+     *
+     * @return $this
+     */
+    public function hideEmpty(): static
+    {
+        $this->emptyOption = false;
 
         return $this;
     }
@@ -352,6 +377,15 @@ JS;
      */
     public function render()
     {
+        if ($this->options instanceof \Closure) {
+            if ($this->form) {
+                $this->options = $this->options->bindTo($this->form->model());
+            }
+            $this->options(call_user_func($this->options, $this->value, $this));
+        }
+
+        $this->options = array_filter($this->options, 'strlen');
+
         $configs = array_merge([
             'removeItems'        => true,
             'removeItemButton'   => true,
@@ -363,6 +397,12 @@ JS;
             'classNames' => [
                 'containerOuter' => ['choices', $this->getElementClassString()],
             ],
+            'loadingText'       => trans('admin.choices.loadingText'),
+            'noResultsText'     => trans('admin.choices.noResultsText'),
+            'noChoicesText'     => trans('admin.choices.noChoicesText'),
+            'itemSelectText'    => trans('admin.choices.itemSelectText'),
+            'uniqueItemText'    => trans('admin.choices.uniqueItemText'),
+            'customAddItemText' => trans('admin.choices.customAddItemText'),
         ], $this->config);
         $configs = json_encode($configs);
 
@@ -372,18 +412,10 @@ JS;
             $this->script .= $this->additional_script;
         }
 
-        if ($this->options instanceof \Closure) {
-            if ($this->form) {
-                $this->options = $this->options->bindTo($this->form->model());
-            }
-            $this->options(call_user_func($this->options, $this->value, $this));
-        }
-
-        $this->options = array_filter($this->options, 'strlen');
-
         $this->addVariables([
             'options' => $this->options,
             'groups'  => $this->groups,
+            'emptyOption'   => $this->emptyOption,
         ]);
 
         $this->addCascadeScript();
