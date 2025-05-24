@@ -368,6 +368,16 @@ class HasMany extends Field
             return;
         }
 
+        if (Str::contains($this->relationName, '.')) {
+            $relations = Str::of($this->relationName)->explode('.')->toArray();
+            $model = $this->form->model();
+            foreach ($relations as $relationName) {
+                $model = $model->{$relationName}()->getRelated();
+            }
+
+            return $model->getKeyName();
+        }
+
         return $this->form->model()->{$this->relationName}()->getRelated()->getKeyName();
     }
 
@@ -434,7 +444,20 @@ class HasMany extends Field
 
         $model = $this->form->model();
 
-        $relation = call_user_func([$model, $this->relationName]);
+        if (Str::contains($this->relationName, '.')) {
+            $relations = Str::of($this->relationName)->explode('.')->toArray();
+            $lastRelationKey = array_key_last ($relations);
+            $lastRelationName = $relations[$lastRelationKey];
+            unset($relations[$lastRelationKey]);
+
+            foreach ($relations as $relationName) {
+                $model = $model->{$relationName}()->getRelated();
+            }
+
+            $relation = call_user_func([$model, $lastRelationName]);
+        } else {
+            $relation = call_user_func([$model, $this->relationName]);
+        }
 
         if (!$relation instanceof Relation && !$relation instanceof MorphMany) {
             throw new \Exception('hasMany field must be a HasMany or MorphMany relation.');
