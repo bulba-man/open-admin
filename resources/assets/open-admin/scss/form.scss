@@ -80,6 +80,27 @@ select {
         background-color: $primary !important; /* for IE */
         color: #fff !important;
     }
+
+    &.select-as-list {
+        padding: 0;
+        border: 1px solid rgba(0, 0, 0, .125);
+
+        option {
+            position: relative;
+            display: block;
+            padding: .5rem 1rem;
+            color: #212529;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ececec;
+            border-left: 0;
+            border-right: 0;
+
+            &+option {
+                border-top-width: 0;
+            }
+        }
+    }
 }
 
 body .choices[data-type*="select-one"] {
