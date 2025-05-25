@@ -61,6 +61,7 @@ use OpenAdmin\Admin\Form\Field;
  * @method Field\BelongsToMany  belongsToMany($column, $selectable, $label = '')
  * @method Field\SelectList     selectList($column, $label = '')
  * @method Field\Columns        columns($label = '')
+ * @method Field\RadioList      radioList($column, $label = '')
  */
 trait HasFields
 {
@@ -128,6 +129,7 @@ trait HasFields
         'belongsToMany'     => Field\BelongsToMany::class,
         'selectList'        => Field\SelectList::class,
         'columns'           => Field\Columns::class,
+        'radioList'         => Field\RadioList::class,
     ];
 
     /**
