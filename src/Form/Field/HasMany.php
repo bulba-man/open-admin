@@ -78,6 +78,8 @@ class HasMany extends Field
         'allowCreate' => true,
         'allowDelete' => true,
         'sortable'    => false,
+        'deleteButShowText' => true,
+        'addButShowText'    => true,
     ];
 
     /**
@@ -675,6 +677,30 @@ EOT;
     public function disableDelete()
     {
         $this->options['allowDelete'] = false;
+
+        return $this;
+    }
+
+    /**
+     * Hide delete button text. show only icon
+     *
+     * @return $this
+     */
+    public function hideDeleteText()
+    {
+        $this->options['deleteButShowText'] = false;
+
+        return $this;
+    }
+
+    /**
+     * Hide create button text. show only icon
+     *
+     * @return $this
+     */
+    public function hideAddText()
+    {
+        $this->options['addButShowText'] = false;
 
         return $this;
     }
