@@ -3,7 +3,7 @@
 @endif
 <div class="row {{$class}}">
     @foreach($columns as $column)
-        <div class="col-sm-{{$column['width']}} offset-sm-{{$column['offset']}}">
+        <div class="{{$column['class']}}">
             @foreach($column['fields'] as $field)
                 {!! $field->render() !!}
             @endforeach

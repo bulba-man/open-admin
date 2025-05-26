@@ -19,17 +19,31 @@ class Columns extends \OpenAdmin\Admin\Form\Field
         $this->label = $label;
     }
 
+    /**
+     * @param int|array|string $width
+     * @param Closure $content
+     * @return $this
+     */
     public function add($width, Closure $content)
     {
         $fields = $this->collectFields($content);
 
-        $offset = 0;
-        if (is_array($width) && count($width) > 1) {
-            $offset = $width[1];
-            $width = $width[0];
+        if (is_string($width)) {
+            $class = $width;
+        } else {
+            $offset = 0;
+            if (is_array($width) && count($width) > 1) {
+                $offset = $width[1];
+                $width = $width[0];
+            }
+
+            $class = 'col-sm-'.$width;
+            if ($offset) {
+                $class .= ' offset-sm-'.$offset;
+            }
         }
 
-        $this->columns->push(compact('width', 'offset', 'fields'));
+        $this->columns->push(compact('width', 'class', 'fields'));
 
         return $this;
     }
