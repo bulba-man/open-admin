@@ -428,6 +428,12 @@ body .choices {
         }
     }
 
+    table td.hidden,
+    table th.hidden {
+        padding: 0 !important;
+        width: 0 !important;
+    }
+
 /*-------------------------------------------------------*/
 /* dual-list */
 /*-------------------------------------------------------*/
@@ -581,5 +587,19 @@ body .choices {
     .btn-check:disabled + .btn:hover {
         background: linear-gradient(#e3e3e3, #e3e3e3);
         background-color: #e3e3e3 !important;
+    }
+}
+
+.form-divider {
+    height: 20px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .divider-text {
+        font-size: 18px;
+        background-color: #ffffff;
+        padding: 0 10px;
     }
 }
