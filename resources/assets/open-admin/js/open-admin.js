@@ -237,7 +237,7 @@ admin.ajax = {
         // now handled by admin.form.initAjax()
         // also needs to work for widgets
 
-        NProgress.configure({ parent: '#main' });
+        // NProgress.configure({ parent: '#main' });
     },
 
     // use navigate when you want history working

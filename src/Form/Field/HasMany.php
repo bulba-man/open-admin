@@ -78,6 +78,8 @@ class HasMany extends Field
         'allowCreate' => true,
         'allowDelete' => true,
         'sortable'    => false,
+        'deleteButShowText' => true,
+        'addButShowText'    => true,
     ];
 
     /**
@@ -543,6 +545,11 @@ document.querySelector('#has-many-{$this->id} .add').addEventListener("click", f
     tpl = tpl.replace(/{$defaultKey}/g, index);
     var clone = htmlToElement(tpl);
     addRemoveHasManyListener{$this->getJSSelector()}(clone.querySelector('.remove'));
+
+    clone.querySelectorAll('input').forEach(elem => {
+        addEnterHasManyListener{$this->getJSSelector()}(elem);
+    });
+
     document.querySelector('.has-many-{$this->id}-forms').appendChild(clone);
 
     if (typeof(addHasManyTab{$this->getJSSelector()}) == 'function'){
@@ -557,6 +564,19 @@ document.querySelector('#has-many-{$this->id} .add').addEventListener("click", f
 document.querySelectorAll('#has-many-{$this->id} .remove').forEach(remove => {
     addRemoveHasManyListener{$this->getJSSelector()}(remove);
 });
+
+document.querySelectorAll('#has-many-{$this->id} input').forEach(elem => {
+    addEnterHasManyListener{$this->getJSSelector()}(elem);
+});
+
+function addEnterHasManyListener{$this->getJSSelector()}(el){
+    el.addEventListener("keydown", function (event) {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            return false;
+        }
+    });
+}
 
 function addRemoveHasManyListener{$this->getJSSelector()}(remove){
     remove.addEventListener("click", function () {
@@ -657,6 +677,30 @@ EOT;
     public function disableDelete()
     {
         $this->options['allowDelete'] = false;
+
+        return $this;
+    }
+
+    /**
+     * Hide delete button text. show only icon
+     *
+     * @return $this
+     */
+    public function hideDeleteText()
+    {
+        $this->options['deleteButShowText'] = false;
+
+        return $this;
+    }
+
+    /**
+     * Hide create button text. show only icon
+     *
+     * @return $this
+     */
+    public function hideAddText()
+    {
+        $this->options['addButShowText'] = false;
 
         return $this;
     }

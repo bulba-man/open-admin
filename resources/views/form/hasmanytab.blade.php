@@ -31,7 +31,11 @@
                 <div class="form-group form-delete-group">
                     <label class="{{$viewClass['label']}} form-label"></label>
                     <div class="{{$viewClass['field']}}">
+                        @if($options['deleteButShowText'])
                         <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
+                        @else
+                        <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i></div>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -53,7 +57,11 @@
             <div class="form-group form-delete-group">
                 <label class="{{$viewClass['label']}} form-label"></label>
                 <div class="{{$viewClass['field']}}">
+                    @if($options['deleteButShowText'])
                     <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
+                    @else
+                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i></div>
+                    @endif
                 </div>
             </div>
             @endif

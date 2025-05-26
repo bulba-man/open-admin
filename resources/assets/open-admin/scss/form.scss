@@ -84,6 +84,7 @@ select {
     &.select-as-list {
         padding: 0;
         border: 1px solid rgba(0, 0, 0, .125);
+        background-color: #fff;
 
         option {
             position: relative;
@@ -98,6 +99,19 @@ select {
 
             &+option {
                 border-top-width: 0;
+            }
+        }
+
+        &:disabled {
+            background-color: #e9ecef;
+            option {
+                background-color: #e9ecef;
+                border-color: #d7d7d7;
+
+                &:hover {
+                    background: linear-gradient(#e3e3e3, #e3e3e3);
+                    background-color: #e3e3e3 !important;
+                }
             }
         }
     }
@@ -414,6 +428,12 @@ body .choices {
         }
     }
 
+    table td.hidden,
+    table th.hidden {
+        padding: 0 !important;
+        width: 0 !important;
+    }
+
 /*-------------------------------------------------------*/
 /* dual-list */
 /*-------------------------------------------------------*/
@@ -498,4 +518,88 @@ body .choices {
 .table-with-fields tbody .form-group [class*=col-]:not(.form-label) {
     width: 100%;
     display: inline;
+}
+
+.radio-as-list-label {
+    width: 100%;
+    font-weight: bold;
+    line-height: 3rem;
+}
+
+.radio-as-list {
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: #fff;
+    max-height: 190px;
+    min-height: 190px;
+    overflow-y: auto;
+
+    .list-group-item {
+        padding: 0;
+        border: 1px solid #ececec;
+        border-left: 0;
+        border-right: 0;
+
+        &+.list-group-item {
+            border-top-width: 0;
+        }
+    }
+
+    label {
+        position: relative;
+        display: block;
+        padding: 0.5rem 1rem;
+        color: #212529;
+        text-decoration: none;
+        background-color: #fff;
+        border: none;
+        text-align: left;
+        cursor: default;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        border-radius: 0;
+
+        &:hover {
+            background-color: #e3e3e3;
+            color: #212529;
+        }
+    }
+
+    .btn-check:focus+.btn,
+    .btn:focus {
+        outline: 0;
+        box-shadow: none;
+    }
+
+    .btn-check:checked+label, .btn-check:active+label,
+    .btn-check:checked+label:hover, .btn-check:active+label:hover{
+        color: #fff;
+        background-color: #3a96ff;
+        border-color: #3a96ff;
+    }
+
+    .btn-check:disabled + .btn {
+        background-color: #e9ecef;
+        border-color: #d7d7d7;
+    }
+
+    .btn-check:disabled + .btn:hover {
+        background: linear-gradient(#e3e3e3, #e3e3e3);
+        background-color: #e3e3e3 !important;
+    }
+}
+
+.form-divider {
+    height: 20px;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .divider-text {
+        font-size: 18px;
+        background-color: #ffffff;
+        padding: 0 10px;
+    }
 }

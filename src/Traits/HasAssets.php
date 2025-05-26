@@ -84,6 +84,7 @@ trait HasAssets
         'vendor/open-admin/sweetalert2/sweetalert2.min.js',
         'vendor/open-admin/toastify-js/toastify.js',
         'vendor/open-admin/flatpickr/flatpickr.min.js',
+        'vendor/open-admin/flatpickr/l10n/index.js',
         'vendor/open-admin/choicesjs/scripts/choices.min.js',
         'vendor/open-admin/sortablejs/Sortable.min.js',
 
