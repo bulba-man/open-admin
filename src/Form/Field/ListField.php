@@ -90,6 +90,7 @@ class ListField extends Field
 
         document.querySelectorAll('tbody.list-{$selector}-table input').forEach(elem => {
             addEnterListFieldListener_{$selector}(elem);
+            addPasteListFieldListener_{$selector}(elem);
         });
 
         function addNewElementToList_{$selector}() {
@@ -97,11 +98,36 @@ class ListField extends Field
             var clone = htmlToElement(tpl);
             clone.querySelectorAll('input').forEach(elem => {
                 addEnterListFieldListener_{$selector}(elem);
+                addPasteListFieldListener_{$selector}(elem);
             });
             document.querySelector('tbody.list-{$selector}-table').appendChild(clone);
             var input = clone.querySelector('input');
             input.focus();
             input.setSelectionRange(-1, -1);
+
+            return input;
+        }
+
+        function addPasteListFieldListener_{$selector}(el){
+            el.addEventListener('paste', function (e) {
+                var clipboardData, pastedData;
+                e.stopPropagation();
+                e.preventDefault();
+                clipboardData = e.clipboardData || window.clipboardData;
+                pastedData = clipboardData.getData('Text');
+                var regexp = new RegExp("\\r\\n|\\r|\\n");
+                var rows = pastedData.split(regexp);
+                if (rows.length) {
+                    e.target.value = rows[0];
+                }
+
+                if (rows.length > 1) {
+                    for (var i = 1; i < rows.length; i++) {
+                        var input = addNewElementToList_{$selector}();
+                        input.value = rows[i];
+                    }
+                }
+            });
         }
 
         function addEnterListFieldListener_{$selector}(el){
