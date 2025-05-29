@@ -24,10 +24,24 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 admin.init = function () {
+    admin.makeEvents();
     admin.menu.init();
     admin.ajax.init();
     admin.pages.init();
 };
+
+admin.makeEvents = function () {
+    this.requestFinalEvent = new CustomEvent("adminRequestFinal", {bubbles: true, cancelable: true});
+
+    this.menuInitEvent = new CustomEvent("adminMenuInit", {bubbles: true, cancelable: true});
+    this.menuInitedEvent = new CustomEvent("adminMenuInited", {bubbles: true, cancelable: true});
+
+    this.ajaxInitEvent = new CustomEvent("adminAjaxInit", {bubbles: true, cancelable: true});
+    this.ajaxInitedEvent = new CustomEvent("adminAjaxInited", {bubbles: true, cancelable: true});
+
+    this.pagesInitEvent = new CustomEvent("adminPagesInit", {bubbles: true, cancelable: true});
+    this.pagesInitedEvent = new CustomEvent("adminPagesInited", {bubbles: true, cancelable: true});
+}
 
 /*-------------------------------------------------*/
 /* menu */
@@ -35,6 +49,8 @@ admin.init = function () {
 
 admin.menu = {
     init: function () {
+        document.dispatchEvent(admin.menuInitEvent);
+
         let menuToggle = document.getElementById('menu-toggle');
 
         menuToggle.addEventListener('click', function () {
@@ -77,6 +93,8 @@ admin.menu = {
             );
         }
         this.initSearch();
+
+        document.dispatchEvent(admin.menuInitedEvent);
     },
 
     close: function () {
@@ -209,6 +227,8 @@ admin.ajax = {
     },
 
     init: function () {
+        document.dispatchEvent(admin.ajaxInitEvent);
+
         // history back
         window.onpopstate = function (event) {
             preventPopState = true;
@@ -238,6 +258,8 @@ admin.ajax = {
         // also needs to work for widgets
 
         // NProgress.configure({ parent: '#main' });
+
+        document.dispatchEvent(admin.ajaxInitedEvent);
     },
 
     // use navigate when you want history working
@@ -298,6 +320,7 @@ admin.ajax = {
                 admin.ajax.error(error);
             })
             .then(function () {
+                document.dispatchEvent(admin.requestFinalEvent);
                 NProgress.done();
                 if (typeof result_function == 'undefined' && !admin.ajax.currenTarget) {
                     admin.pages.init();
@@ -401,12 +424,14 @@ admin.ajax = {
 
 admin.pages = {
     init: function () {
+        document.dispatchEvent(admin.pagesInitEvent);
         this.setTitle();
         admin.menu.setActivePage(window.location.href);
         admin.grid.init();
         admin.grid.inline_edit.init();
         admin.form.init();
         this.initBootstrap();
+        document.dispatchEvent(admin.pagesInitedEvent);
     },
 
     setTitle: function () {
