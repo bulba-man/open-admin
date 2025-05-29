@@ -3,6 +3,7 @@
 namespace OpenAdmin\Admin\Actions;
 
 use Illuminate\Http\Request;
+use Mockery\Matcher\Closure;
 use OpenAdmin\Admin\Grid\Column;
 
 abstract class RowAction extends GridAction
@@ -26,6 +27,11 @@ abstract class RowAction extends GridAction
      * @var bool
      */
     protected $asColumn = false;
+
+    /**
+     * @var Closure
+     */
+    protected $beforeRenderCollback;
 
     /**
      * Get primary key value of current row.
@@ -127,6 +133,20 @@ abstract class RowAction extends GridAction
     {
     }
 
+    public function beforeRender(\Closure $callback)
+    {
+        $this->beforeRenderCollback = $callback;
+    }
+
+    public function shouldRender(): bool
+    {
+        if ($this->beforeRenderCollback instanceof \Closure) {
+            return $this->beforeRenderCollback->call($this, $this);
+        }
+
+        return true;
+    }
+
     /**
      * Render row action.
      *
@@ -134,11 +154,15 @@ abstract class RowAction extends GridAction
      */
     public function render()
     {
+        if (!$this->shouldRender()) {
+            return '';
+        }
+
         $linkClass = ($this->parent->getActionClass() != "OpenAdmin\Admin\Grid\Displayers\Actions\Actions") ? 'dropdown-item' : '';
         $icon = $this->getIcon();
 
         if ($href = $this->href()) {
-            return "<a href='{$href}' class='{$linkClass}'>{$icon}<span class='label'>{$this->name()}</span></a>";
+            return "<a href='{$href}' class='{$linkClass}' title='{$this->name()}'>{$icon}<span class='label'>{$this->name()}</span></a>";
         }
 
         $this->addScript();
@@ -146,7 +170,7 @@ abstract class RowAction extends GridAction
         $attributes = $this->formatAttributes();
 
         return sprintf(
-            "<a data-_key='%s' href='javascript:void(0);' class='%s {$linkClass}' {$attributes}>{$icon}<span class='label'>%s</span></a>",
+            "<a data-_key='%s' href='javascript:void(0);' class='%s {$linkClass}' title='{$this->name()}' {$attributes}>{$icon}<span class='label'>%s</span></a>",
             $this->getKey(),
             $this->getElementClass(),
             $this->asColumn ? $this->display($this->row($this->column->getName())) : $this->name()
