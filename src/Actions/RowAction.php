@@ -34,6 +34,11 @@ abstract class RowAction extends GridAction
     protected $beforeRenderCollback;
 
     /**
+     * @var string
+     */
+    protected $cssClass = '';
+
+    /**
      * Get primary key value of current row.
      *
      * @return mixed
@@ -162,7 +167,7 @@ abstract class RowAction extends GridAction
         $icon = $this->getIcon();
 
         if ($href = $this->href()) {
-            return "<a href='{$href}' class='{$linkClass}' title='{$this->name()}'>{$icon}<span class='label'>{$this->name()}</span></a>";
+            return "<a href='{$href}' class='{$linkClass} {$this->cssClass}' title='{$this->name()}'>{$icon}<span class='label'>{$this->name()}</span></a>";
         }
 
         $this->addScript();
@@ -170,7 +175,7 @@ abstract class RowAction extends GridAction
         $attributes = $this->formatAttributes();
 
         return sprintf(
-            "<a data-_key='%s' href='javascript:void(0);' class='%s {$linkClass}' title='{$this->name()}' {$attributes}>{$icon}<span class='label'>%s</span></a>",
+            "<a data-_key='%s' href='javascript:void(0);' class='%s {$linkClass} {$this->cssClass}' title='{$this->name()}' {$attributes}>{$icon}<span class='label'>%s</span></a>",
             $this->getKey(),
             $this->getElementClass(),
             $this->asColumn ? $this->display($this->row($this->column->getName())) : $this->name()
