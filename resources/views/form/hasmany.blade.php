@@ -1,17 +1,17 @@
 
-<div class="row has-many-head {{$column}}">
+<div class="row has-many-head {{$id}}">
     <h4>{{ $label }}</h4>
 </div>
 
 <hr class="form-border">
 
-<div id="has-many-{{$column}}" class="has-many-body has-many-{{$column}}">
+<div id="has-many-{{$id}}" class="has-many-body has-many-{{$id}}">
 
-    <div class="has-many-{{$column}}-forms">
+    <div class="has-many-{{$id}}-forms">
 
         @foreach($forms as $pk => $form)
 
-            <div class="has-many-{{$column}}-form fields-group">
+            <div class="has-many-{{$id}}-form fields-group">
 
                 @foreach($form->fields() as $field)
                     {!! $field->render() !!}
@@ -37,8 +37,8 @@
     </div>
 
 
-    <template class="{{$column}}-tpl">
-        <div class="has-many-{{$column}}-form fields-group">
+    <template class="{{$id}}-tpl">
+        <div class="has-many-{{$id}}-form fields-group">
 
             {!! $template !!}
 
