@@ -55,6 +55,8 @@ class SwitchField extends Field
             return '';
         }
 
+        $this->addCascadeScript();
+
         return parent::render();
     }
 }
