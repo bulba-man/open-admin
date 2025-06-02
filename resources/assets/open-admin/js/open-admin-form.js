@@ -59,6 +59,14 @@ admin.form = {
                 //let data = Object.fromEntries(new FormData(form).entries()); //this doesn't get arrays, not sure why used in the first place
                 let data = new FormData(form);
                 let searchParams = new URLSearchParams(data);
+
+                let currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.forEach((value, key) => {
+                    if (!searchParams.has(key)) {
+                        searchParams.set(key, value);
+                    }
+                });
+
                 let query_str = searchParams.toString();
                 url += '?' + query_str;
 
