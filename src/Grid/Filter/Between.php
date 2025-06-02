@@ -12,6 +12,15 @@ class Between extends AbstractFilter
      */
     protected $view = 'admin::filter.between';
 
+    protected $placeholder = ['start' => '', 'end' => ''];
+
+    public function __construct($column, $label = '')
+    {
+        parent::__construct($column, $label);
+
+        $this->placeholder = ['start' => $this->label, 'end' => $this->label];
+    }
+
     /**
      * Format id.
      *
@@ -25,6 +34,12 @@ class Between extends AbstractFilter
 
         return ['start' => "{$id}_start", 'end' => "{$id}_end"];
     }
+
+    public function setPlaceholders($start, $end)
+    {
+        $this->placeholder = ['start' => $start, 'end' => $end];
+    }
+
 
     /**
      * Format two field names of this filter.
@@ -131,5 +146,13 @@ class Between extends AbstractFilter
 SCRIPT;
 
         Admin::script($script);
+    }
+
+    protected function variables()
+    {
+        return array_merge(parent::variables(), [
+            'placeholder' => $this->placeholder,
+
+        ]);
     }
 }
