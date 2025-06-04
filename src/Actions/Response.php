@@ -204,6 +204,19 @@ class Response
         return $this;
     }
 
+    public function callFunction($functionName, array $args = [])
+    {
+        $this->then = [
+            'action' => 'call',
+            'value' => [
+                'func' => $functionName,
+                'args' => array_values($args)
+            ]
+        ];
+
+        return $this;
+    }
+
     /**
      * Send a html response.
      *
