@@ -144,7 +144,10 @@ class Form extends Interactor
     {
         // return an actual form instance instead of the interactor
         if (empty($this->form)) {
-            $this->form = new ModalForm($this);
+
+            $this->form = new ModalForm(
+                method_exists($this->action, 'row') ? $this->action->row() : $this
+            );
         }
 
         return $this->form;
@@ -286,6 +289,9 @@ class Form extends Interactor
         $field_html    = '';
         $field_scripts = '';
         foreach ($this->fields as $field) {
+            if (is_string($field->getId())) {
+                $field->setId($field->getId() . '_' . $this->row->getKey());
+            }
             $field_html .= $field->render();
             $field_scripts .= $field->getScript();
         }

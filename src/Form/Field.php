@@ -879,6 +879,13 @@ class Field implements Renderable
         return $this->id;
     }
 
+    public function setId(string $id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
     /**
      * Set or get value of the field.
      *
