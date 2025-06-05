@@ -61,8 +61,8 @@ class DateTime extends Presenter
     protected function prepare()
     {
         $this->check_format_options();
-        $script = "flatpickr('#{$this->filter->getId()}',".json_encode($this->options).');';
-        Admin::script($script);
+
+        Admin::script(Admin::makeFlatpickrInit('#'.$this->filter->getId(), $this->options));
     }
 
     public function variables(): array

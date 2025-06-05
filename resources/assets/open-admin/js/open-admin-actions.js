@@ -89,6 +89,19 @@ admin.actions = {
             if (then.action == 'open') {
                 window.open(then.value, '_blank');
             }
+
+            if (then.action == 'call') {
+                if (eval("typeof "+then.value.func+" === 'function'")) {
+                    var args = '';
+                    then.value.args.forEach((obj, index) => {
+                        if (index > 0) {
+                            args += ', ';
+                        }
+                        args += 'then.value.args['+index+']';
+                    });
+                    eval(then.value.func+"("+args+")");
+                }
+            }
         };
 
         if (typeof response.html === 'string') {

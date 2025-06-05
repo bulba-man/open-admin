@@ -12,6 +12,15 @@ class Between extends AbstractFilter
      */
     protected $view = 'admin::filter.between';
 
+    protected $placeholder = ['start' => '', 'end' => ''];
+
+    public function __construct($column, $label = '')
+    {
+        parent::__construct($column, $label);
+
+        $this->placeholder = ['start' => $this->label, 'end' => $this->label];
+    }
+
     /**
      * Format id.
      *
@@ -25,6 +34,12 @@ class Between extends AbstractFilter
 
         return ['start' => "{$id}_start", 'end' => "{$id}_end"];
     }
+
+    public function setPlaceholders($start, $end)
+    {
+        $this->placeholder = ['start' => $start, 'end' => $end];
+    }
+
 
     /**
      * Format two field names of this filter.
@@ -116,9 +131,9 @@ class Between extends AbstractFilter
         $startOptions = json_encode($options);
         $endOptions = json_encode($options + ['useCurrent' => false]);
 
-        $script = <<<SCRIPT
-        let inst_{$this->id['start']} = flatpickr('#{$this->id['start']}',$startOptions);
-        let inst_{$this->id['end']} = flatpickr('#{$this->id['end']}',$endOptions);
+        $script = Admin::makeFlatpickrInit('#'.$this->id['start'], $options, "inst_{$this->id['start']}");
+        $script .= Admin::makeFlatpickrInit('#'.$this->id['end'], $options + ['useCurrent' => false], "inst_{$this->id['end']}");
+        $script .= <<<SCRIPT
 
         inst_{$this->id['start']}.config.onChange.push(function(selectedDates, dateStr, instance) {
             inst_{$this->id['end']}.set("minDate",dateStr);
@@ -131,5 +146,13 @@ class Between extends AbstractFilter
 SCRIPT;
 
         Admin::script($script);
+    }
+
+    protected function variables()
+    {
+        return array_merge(parent::variables(), [
+            'placeholder' => $this->placeholder,
+
+        ]);
     }
 }

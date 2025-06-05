@@ -438,4 +438,36 @@ class Admin
 
         return null;
     }
+
+    public static function makeFlatpickrInit(string $selector, array $options = [], $varName = null)
+    {
+        $plugins = [];
+        if (isset($options['plugins']) && count($options['plugins'])) {
+            $plugins = $options['plugins'];
+        }
+        $options['plugins'] = [];
+
+        $optionsJson = json_encode($options);
+        $optionsVarName = 'options_'.str()->random();
+        $script = <<<SCRIPT
+            var {$optionsVarName} = {$optionsJson};
+
+SCRIPT;
+        if (count($plugins)) {
+            foreach ($plugins as $pluginName => $pluginOptions) {
+                $pluginOptionsJson = json_encode($pluginOptions);
+                $script .= <<<SCRIPT
+            {$optionsVarName}.plugins.push(new {$pluginName}({$pluginOptionsJson}));
+SCRIPT;
+            }
+        }
+
+        $varName = ($varName) ? 'var '.$varName.' =' : '';
+        $script .= <<<SCRIPT
+           {$varName} flatpickr('{$selector}',{$optionsVarName});
+
+SCRIPT;
+
+        return $script;
+    }
 }

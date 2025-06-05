@@ -261,6 +261,8 @@ SCRIPT;
     {
         $check_class = str_replace("\Field\\", "\Field\Traits\\", get_class($this));
         switch ($check_class) {
+            case SwitchField::class:
+                return "var checked = document.querySelector('#{$this->id}').value";
             case Radio::class:
             case RadioButton::class:
             case RadioCard::class:

@@ -591,7 +591,13 @@ class Grid
 
         Column::setOriginalGridModels($collection);
 
-        $data = $collection->toArray();
+//        $data = $collection->toArray();
+        $data = [];
+        foreach ($collection as $item) {
+            $itemData = $item->toArray();
+            $itemData['raw_model'] = $item;
+            $data[] = $itemData;
+        }
 
         $this->columns->map(function (Column $column) use (&$data) {
             $data = $column->fill($data);

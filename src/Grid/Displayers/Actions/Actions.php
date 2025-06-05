@@ -129,7 +129,7 @@ class Actions extends AbstractDisplayer
     {
         $this->prepareAction($action);
 
-        array_push($this->custom, $action);
+        $this->custom[$action::class] = $action;
 
         return $this;
     }
@@ -165,7 +165,7 @@ class Actions extends AbstractDisplayer
 
             $this->prepareAction($action);
 
-            array_push($this->default, $action);
+            $this->default[$class] = $action;
         }
     }
 
@@ -257,21 +257,56 @@ class Actions extends AbstractDisplayer
     }
 
     /**
+     * @param $className
+     * @return false|RowAction
+     */
+    public function getAction($className)
+    {
+        if (isset($this->default[$className])) {
+            return $this->default[$className];
+        }
+
+        if (isset($this->custom[$className])) {
+            return $this->custom[$className];
+        }
+
+        return false;
+    }
+
+    protected function filterActions()
+    {
+        foreach ($this->default as $name => $action) {
+
+            if (!in_array($name, $this->defaultClass) || !$action->shouldRender()) {
+                unset($this->default[$name]);
+            }
+        }
+
+        foreach ($this->custom as $name => $action) {
+            if (!$action->shouldRender()) {
+                unset($this->custom[$name]);
+            }
+        }
+    }
+
+    /**
      * @param null|\Closure $callback
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      */
     public function display($callback = null)
     {
+        $this->prependDefaultActions();
+
         if ($callback instanceof \Closure) {
             $callback->call($this, $this);
         }
 
+        $this->filterActions();
+
         if ($this->disableAll) {
             return '';
         }
-
-        $this->prependDefaultActions();
 
         $variables = [
             'default'           => $this->default,
