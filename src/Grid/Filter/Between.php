@@ -128,11 +128,11 @@ class Between extends AbstractFilter
         $options['locale'] = Arr::get($options, 'locale', config('app.locale'));
         $options['allowInput'] = Arr::get($options, 'allowInput', true);
 
-        $startOptions = $options;
-        $endOptions = $options + ['useCurrent' => false];
+        $startOptions = json_encode($options);
+        $endOptions = json_encode($options + ['useCurrent' => false]);
 
-        $script = Admin::makeFlatpickrInit('#'.$this->id['start'], $startOptions, "inst_{$this->id['start']}");
-        $script .= Admin::makeFlatpickrInit('#'.$this->id['end'], $endOptions, "inst_{$this->id['end']}");
+        $script = Admin::makeFlatpickrInit('#'.$this->id['start'], $options, "inst_{$this->id['start']}");
+        $script .= Admin::makeFlatpickrInit('#'.$this->id['end'], $options + ['useCurrent' => false], "inst_{$this->id['end']}");
         $script .= <<<SCRIPT
 
         inst_{$this->id['start']}.config.onChange.push(function(selectedDates, dateStr, instance) {
