@@ -16,7 +16,7 @@ abstract class Interactor
      */
     public static $elements = [
         'addValues', 'getRow', 'success', 'error', 'warning', 'info', 'question', 'confirm',
-        'text', 'email', 'integer', 'ip', 'url', 'password', 'phonenumber',
+        'text', 'email', 'integer', 'ip', 'url', 'password', 'phonenumber', 'number',
         'textarea', 'map', 'select', 'multipleSelect', 'checkbox', 'radio', 'radioCard',
         'file', 'image', 'date', 'datetime', 'time', 'hidden', 'multipleImage',
         'multipleFile', 'modalLarge', 'modalSmall',

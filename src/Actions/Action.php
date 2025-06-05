@@ -37,6 +37,7 @@ use OpenAdmin\Admin\Form\Field;
  * @method $this                modalLarge()
  * @method $this                modalSmall()
  * @method Field\RadioCard      radioCard($column, $label = '')
+ * @method Field\Number         number($column, $label = '')
  */
 abstract class Action implements Renderable
 {
