@@ -47,6 +47,10 @@ class InstallCommand extends Command
     public function initDatabase()
     {
         $this->call('migrate');
+        $this->call('migrate', [
+            '--path' => __DIR__.'/../../database/migrations/',
+            '--realpath' => true
+        ]);
 
         $userModel = config('admin.database.users_model');
 
