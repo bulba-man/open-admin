@@ -2,9 +2,11 @@
     <label class="col-sm-2 control-label">{{$label}}</label>
     <div class="col-sm-8" style="width: 390px">
         <div class="input-group">
-            <div class="input-group-text">
-                <i class="icon-calendar"></i>
-            </div>
+            @if($icon)
+                <div class="input-group-text">
+                    <i class="{{$icon}}"></i>
+                </div>
+            @endif
             <input type="text"
                    class="form-control"
                    id="{{$id['start']}}"

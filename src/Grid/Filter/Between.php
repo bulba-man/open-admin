@@ -14,6 +14,8 @@ class Between extends AbstractFilter
 
     protected $placeholder = ['start' => '', 'end' => ''];
 
+    protected $icon = '';
+
     public function __construct($column, $label = '')
     {
         parent::__construct($column, $label);
@@ -113,6 +115,7 @@ class Between extends AbstractFilter
     public function datetime($options = [])
     {
         $this->view = 'admin::filter.betweenDatetime';
+        $this->icon = (isset($options['icon'])) ? $options['icon'] : 'icon-calendar';
 
         $this->setupDatetime($options);
 
@@ -127,9 +130,6 @@ class Between extends AbstractFilter
         $options['format'] = Arr::get($options, 'format', 'YYYY-MM-DD HH:mm:ss');
         $options['locale'] = Arr::get($options, 'locale', config('app.locale'));
         $options['allowInput'] = Arr::get($options, 'allowInput', true);
-
-        $startOptions = json_encode($options);
-        $endOptions = json_encode($options + ['useCurrent' => false]);
 
         $script = Admin::makeFlatpickrInit('#'.$this->id['start'], $options, "inst_{$this->id['start']}");
         $script .= Admin::makeFlatpickrInit('#'.$this->id['end'], $options + ['useCurrent' => false], "inst_{$this->id['end']}");
@@ -152,7 +152,7 @@ SCRIPT;
     {
         return array_merge(parent::variables(), [
             'placeholder' => $this->placeholder,
-
+            'icon' => $this->icon,
         ]);
     }
 }
