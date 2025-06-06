@@ -144,7 +144,10 @@ class Form extends Interactor
     {
         // return an actual form instance instead of the interactor
         if (empty($this->form)) {
-            $this->form = new ModalForm($this);
+
+            $this->form = new ModalForm(
+                method_exists($this->action, 'row') ? $this->action->row() : $this
+            );
         }
 
         return $this->form;
@@ -286,6 +289,9 @@ class Form extends Interactor
         $field_html    = '';
         $field_scripts = '';
         foreach ($this->fields as $field) {
+            if (is_string($field->getId())) {
+                $field->setId($field->getId() . '_' . $this->row->getKey());
+            }
             $field_html .= $field->render();
             $field_scripts .= $field->getScript();
         }
@@ -350,33 +356,43 @@ class Form extends Interactor
         $this->action->attribute('modal', $this->getModalId());
         $ajaxMethod = strtolower($this->action->getMethod());
 
+        $selector = $this->action->selector($this->action->selectorPrefix);
+        $funcName = $this->action->actionFuncName();
+
         $script = <<<SCRIPT
 
-            document.querySelectorAll('{$this->action->selector($this->action->selectorPrefix)}').forEach(el=>{
-                el.addEventListener('{$this->action->event}',function(){
-                    var data = el.dataset;
-                    var target = el;
+             window.{$funcName} = function(el) {
+                var data = el.dataset;
 
-                    var modalId = el.getAttribute("modal");
-                    var myModalEl = document.getElementById(modalId);
-                    var modal = bootstrap.Modal.getOrCreateInstance(myModalEl)
-                    modal.show();
+                var modalId = el.getAttribute("modal");
+                var myModalEl = document.getElementById(modalId);
+                var modal = bootstrap.Modal.getOrCreateInstance(myModalEl)
+                modal.show();
 
-                    if (myModalEl.querySelector("[name='_key']").value == ""){
-                        myModalEl.querySelector("[name='_key']").value = admin.grid.selected.join();
-                    }
+                if (myModalEl.querySelector("[name='_key']").value == ""){
+                    myModalEl.querySelector("[name='_key']").value = admin.grid.selected.join();
+                }
 
-                    myModalEl.querySelector('form').addEventListener('submit',function(e){
-                        e.preventDefault();
-                        var form = this;
-                        admin.form.submit(form,function(data){
-                            admin.actions.actionResolver([data,el]);
-                        });
-                        modal.hide();
+                myModalEl.querySelector('form').addEventListener('submit',function(e){
+                    e.preventDefault();
+                    var form = this;
+                    admin.form.submit(form,function(data){
+                        admin.actions.actionResolver([data,el]);
                     });
+                    modal.hide();
                 });
+             }
+
+ SCRIPT;
+        if (!$this->action->getAttribute('onclick')) {
+            $script .= <<<SCRIPT
+
+            document.querySelectorAll('{$selector}').forEach(el=>{
+                el.addEventListener('{$this->action->event}', () => window.{$funcName}(el));
             });
-        SCRIPT;
+
+SCRIPT;
+        }
 
         Admin::script($script);
 

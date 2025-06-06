@@ -36,6 +36,8 @@ use OpenAdmin\Admin\Form\Field;
  * @method Field\Hidden         hidden($column, $label = '')
  * @method $this                modalLarge()
  * @method $this                modalSmall()
+ * @method Field\RadioCard      radioCard($column, $label = '')
+ * @method Field\Number         number($column, $label = '')
  */
 abstract class Action implements Renderable
 {
@@ -177,6 +179,14 @@ abstract class Action implements Renderable
         return $this->selector;
     }
 
+    public function actionFuncName($selectorPrefix = null)
+    {
+        $selector = $this->selector(($selectorPrefix) ? $selectorPrefix : $this->selectorPrefix);
+        return \Illuminate\Support\Str::of($selector)
+            ->replace([' ', '.', '#', '[', ']', '=', '-', ','], '_')
+            ->camel()->toString();
+    }
+
     /**
      * @param string $class
      * @param string $prefix
@@ -203,6 +213,15 @@ abstract class Action implements Renderable
         $this->attributes[$name] = $value;
 
         return $this;
+    }
+
+    public function getAttribute($name)
+    {
+        if (isset($this->attributes[$name])) {
+            return $this->attributes[$name];
+        }
+
+        return null;
     }
 
     /**
