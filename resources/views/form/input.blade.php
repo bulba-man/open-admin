@@ -1,6 +1,6 @@
 @include("admin::form._header")
 
-        <div class="input-group">
+        <div class="input-group {!! !$errors->has($errorKey) ? '' : 'is-invalid' !!}">
 
             @if ($prepend)
             <span class="input-group-text with-icon">{!! $prepend !!}</span>
