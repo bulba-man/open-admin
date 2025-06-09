@@ -2,12 +2,10 @@
 
     @foreach($errorKey as $key => $col)
         @if($errors->has($col.$key))
-        <div class="alert alert-danger">
-            <ul class="m-0">
+            <div class="invalid-feedback">
             @foreach($errors->get($col.$key) as $message)
-                <li for="inputError"> {{$message}}</li>
+                <div class="error-item">{{$message}}</div>
             @endforeach
-            </ul>
             </div>
         @endif
     @endforeach
@@ -15,12 +13,10 @@
 @else
 
     @if($errors->has($errorKey))
-        <div class="alert alert-danger">
-            <ul class="m-0 ps-3">
+        <div class="invalid-feedback">
             @foreach($errors->get($errorKey) as $message)
-                <li for="inputError"> {{$message}}</li>
+                <div class="error-item">{{$message}}</div>
             @endforeach
-            </ul>
         </div>
     @endif
 

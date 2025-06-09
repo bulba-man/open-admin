@@ -1,3 +1,4 @@
+@include('admin::form.error')
 @include('admin::form.help-block')
 @if(!empty($inline))
     </div>

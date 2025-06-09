@@ -1396,6 +1396,11 @@ class Field implements Renderable
             $this->elementClass = (array) str_replace(['[', ']'], '_', $name);
         }
 
+        $errors = app('request')->session()->get('errors');
+        if ($errors && $errors->has($this->getErrorKey())) {
+            $this->elementClass[] = 'is-invalid';
+        }
+
         return $this->elementClass;
     }
 
