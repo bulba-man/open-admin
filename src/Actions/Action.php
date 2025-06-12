@@ -38,6 +38,8 @@ use OpenAdmin\Admin\Form\Field;
  * @method $this                modalSmall()
  * @method Field\RadioCard      radioCard($column, $label = '')
  * @method Field\Number         number($column, $label = '')
+ * @method Field\Decimal        decimal($column, $label = '')
+ * @method Field\Divider        divider($title = '')
  */
 abstract class Action implements Renderable
 {
