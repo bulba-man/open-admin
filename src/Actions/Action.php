@@ -40,6 +40,7 @@ use OpenAdmin\Admin\Form\Field;
  * @method Field\Number         number($column, $label = '')
  * @method Field\Decimal        decimal($column, $label = '')
  * @method Field\Divider        divider($title = '')
+ * @method Field\SwitchField    switch ($column, $label = '')
  */
 abstract class Action implements Renderable
 {
