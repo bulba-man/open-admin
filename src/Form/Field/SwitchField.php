@@ -19,6 +19,10 @@ class SwitchField extends Field
 
     public function prepare($value)
     {
+        if (is_bool($value)) {
+            return $value;
+        }
+
         $value = trim($value);
 
         if (strtolower($value) === 'true' || strtolower($value) === 'false') {
