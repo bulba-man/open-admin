@@ -289,7 +289,7 @@ class Form extends Interactor
         $field_html    = '';
         $field_scripts = '';
         foreach ($this->fields as $field) {
-            if (is_string($field->getId())) {
+            if (is_string($field->getId()) && isset($this->row) && !is_array($this->row)) {
                 $field->setId($field->getId() . '_' . $this->row->getKey());
             }
             $field_html .= $field->render();
