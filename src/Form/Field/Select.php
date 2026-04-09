@@ -141,7 +141,7 @@ class Select extends Field
         }
 
         $this->additional_script .= <<<JS
-
+        (function () {
             let elm = document.querySelector("{$this->getElementClassSelector()}");
             var lookupTimeout;
             elm.addEventListener('change', function(event) {
@@ -161,6 +161,7 @@ class Select extends Field
                     {$this->choicesObjName($field)}.setChoices(data.data, '{$idField}', '{$textField}', true);
                 })
             });
+        })();
 JS;
 
         return $this;
@@ -259,6 +260,7 @@ JS;
         ], $this->config);
 
         $this->additional_script = <<<JS
+        (function () {
             let elm = document.querySelector("{$this->getElementClassSelector()}");
             var lookupTimeout;
             elm.addEventListener('search', function(event) {
@@ -274,6 +276,7 @@ JS;
             elm.addEventListener('choice', function(event) {
                 {$this->choicesObjName()}.setChoices([], '{$idField}', '{$textField}', true);
             });
+        })();
         JS;
 
         return $this;
