@@ -145,23 +145,33 @@ class Select extends Field
             let elm = document.querySelector("{$this->getElementClassSelector()}");
             var lookupTimeout;
             elm.addEventListener('change', function(event) {
-                var query = {$this->choicesObjName()}.getValue().value;
-                var current_value = {$this->choicesObjName($field)}.getValue().value;
+                var query = {$this->choicesObjName()}.getValue()?.value;
+                var current_value = {$this->choicesObjName($field)}.getValue()?.value;
                 admin.ajax.post("{$url}",{query:query},function(data){
-                    let found = false;
-                    for (i in data.data){
-                        if (data.data[i].id == current_value){
-                            data.data[i].selected = true;
-                            found = true;
+                    if (current_value) {
+                        let found = false;
+                        for (i in data.data){
+                            if (data.data[i].id == current_value){
+                                data.data[i].selected = true;
+                                found = true;
+                            }
+                        }
+                        if (!found){
+                            data.data.push({'{$idField}':'','{$textField}':'','selected':true});
                         }
                     }
-                    if (!found){
-                        data.data.push({'{$idField}':'','{$textField}':'','selected':true});
-                    }
+
                     {$this->choicesObjName($field)}.setChoices(data.data, '{$idField}', '{$textField}', true);
+
+                    {$this->choicesObjName($field)}.passedElement.element.dispatchEvent(
+                    new CustomEvent('choices:loaded', {
+                        bubbles: true,
+                        detail: { count: data.length },
+                      })
+                    );
                 })
             });
-        })();
+            })();
 JS;
 
         return $this;
@@ -276,7 +286,7 @@ JS;
             elm.addEventListener('choice', function(event) {
                 {$this->choicesObjName()}.setChoices([], '{$idField}', '{$textField}', true);
             });
-        })();
+            })();
         JS;
 
         return $this;
