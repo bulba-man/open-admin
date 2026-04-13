@@ -114,7 +114,7 @@ HTML;
     public function addStyle()
     {
         $style = <<<'STYLE'
-            .belongsto.modal tr {
+            .belongsto.modal tr:not([disabled]) {
                 cursor: pointer;
             }
 

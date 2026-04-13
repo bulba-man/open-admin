@@ -6,7 +6,7 @@
 </span>
 
 <style>
-    .belongsto.modal tr {
+    .belongsto.modal tr:not([disabled]) {
         cursor: pointer;
     }
 

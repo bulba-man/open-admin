@@ -132,7 +132,9 @@
                 */
 
                 if (event.target.tagName == "TD"){
-                    event.target.parentNode.querySelector(".form-check-input").click();
+                    if (!event.target.parentNode.hasAttribute('disabled')) {
+                        event.target.parentNode.querySelector(".form-check-input").click();
+                    }
                 }
             })
         },
