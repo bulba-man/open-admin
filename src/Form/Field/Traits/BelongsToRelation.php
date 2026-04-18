@@ -17,6 +17,8 @@ trait BelongsToRelation
      */
     protected $selectable;
 
+    protected $translations = [];
+
     /**
      * BelongsToRelation constructor.
      *
@@ -66,16 +68,35 @@ trait BelongsToRelation
         return route('admin.handle-selectable', compact('selectable', 'args'));
     }
 
+    public function getTranslations(?string $key = null)
+    {
+        $translations = array_merge([
+            'choose' => admin_trans('admin.choose'),
+            'cancal' => admin_trans('admin.cancel'),
+            'submit' => admin_trans('admin.submit'),
+        ], $this->translations);
+
+        if ($key) {
+            return $translations[$key] ?? '';
+        }
+
+        return $translations;
+
+    }
+
+    public function setTranslations(string $key, string $value)
+    {
+        $this->translations[$key] = $value;
+
+        return $this;
+    }
+
     /**
      * @return $this
      */
     public function addHtml()
     {
-        $trans = [
-            'choose' => admin_trans('admin.choose'),
-            'cancal' => admin_trans('admin.cancel'),
-            'submit' => admin_trans('admin.submit'),
-        ];
+        $trans = $this->getTranslations();
 
         $html = <<<HTML
 <div class="modal fade belongsto" id="{$this->modalID}" tabindex="-1" role="dialog">
@@ -114,7 +135,7 @@ HTML;
     public function addStyle()
     {
         $style = <<<'STYLE'
-            .belongsto.modal tr {
+            .belongsto.modal tr:not([disabled]) {
                 cursor: pointer;
             }
 
@@ -130,6 +151,7 @@ HTML;
 
             .belongsto.modal .loading {
                 margin: 50px;
+                overflow: hidden;
             }
 
             .belongsto-selected-rows footer{

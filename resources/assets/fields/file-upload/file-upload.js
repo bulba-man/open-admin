@@ -43,7 +43,7 @@ class FileUpload {
         this.options = Object.assign({}, defaults, options);
 
         this.input = element;
-        this.fieldName = this.input.getAttribute("name").replace("[]","");
+        this.fieldName = this.input.getAttribute("name").replace(/[\[\]]/g, "_");
         this.multiple = element.multiple;
         this.hasCard = false;
         this.index = 0;
@@ -133,7 +133,13 @@ class FileUpload {
 
     addDeleteField = function(){
 
-        let deleteFieldName = this.fieldName+"_file_del_";
+        let deleteFieldName;
+
+        if (this.input.getAttribute("name").substring(this.input.getAttribute("name").length-1) == ']') {
+            deleteFieldName = this.input.getAttribute("name").substring(0, this.input.getAttribute("name").length-1) +"_file_del_" + ']';
+        } else {
+            deleteFieldName = this.fieldName+"_file_del_";
+        }
 
         if (!document.getElementById(deleteFieldName)){
 

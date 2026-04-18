@@ -5,6 +5,7 @@
         @endif
 
         <select class="form-select {{$class}}" style="width: 100%;" name="{{$name}}@if (!empty($attributes_obj['readonly']))-disabled @endif" {!! $attributes !!} >
+            @if($emptyOption)<option value=""></option>@endif
             @if($groups)
                 @foreach($groups as $group)
                     <optgroup label="{{ $group['label'] }}">
@@ -14,7 +15,6 @@
                     </optgroup>
                 @endforeach
              @else
-                @if($emptyOption)<option value=""></option>@endif
                 @foreach($options as $select => $option)
                     <option value="{{$select}}" {{ $select == old($column, $value) ?'selected':'' }}>{{$option}}</option>
                 @endforeach

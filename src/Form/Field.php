@@ -1005,13 +1005,16 @@ class Field implements Renderable
      * Set help block for current field.
      *
      * @param string $text
+     * @param string $mode
      * @param string $icon
+     *
+     * $mode - can be 'text', 'tooltip' or 'popover'
      *
      * @return $this
      */
-    public function help($text = '', $icon = 'icon-info-circle'): self
+    public function help($text = '', $mode = 'text', $icon = 'icon-info-circle'): self
     {
-        $this->help = compact('text', 'icon');
+        $this->help = compact('text', 'icon', 'mode');
 
         return $this;
     }
@@ -1393,7 +1396,15 @@ class Field implements Renderable
         if (!$this->elementClass) {
             $name = $this->elementName ?: $this->formatName($this->column);
 
-            $this->elementClass = (array) str_replace(['[', ']'], '_', $name);
+            if (is_array($name)) {
+                $class = array_map(function ($value) {
+                    return rtrim(str_replace(['[', ']'], '_', $value), '_');
+                }, $name);
+            } else {
+                $class = (array) rtrim(str_replace(['[', ']'], '_', $name), '_');
+            }
+
+            $this->elementClass = $class;
         }
 
         $errors = app('request')->session()->get('errors');
