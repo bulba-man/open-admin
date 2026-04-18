@@ -133,13 +133,6 @@ class Select extends Field
      */
     public function load($field, $url, $idField = 'id', $textField = 'text', bool $allowClear = true)
     {
-        if (Str::contains($field, '.')) {
-            $field = $this->formatName($field);
-            $class = str_replace(['[', ']'], '_', $field);
-        } else {
-            $class = $field;
-        }
-
         $this->additional_script .= <<<JS
         (function () {
             let elm = document.querySelector("{$this->getElementClassSelector()}");
@@ -408,7 +401,7 @@ JS;
                 'text' => $this->label,
             ],
             'classNames' => [
-                'containerOuter' => ['choices', $this->getElementClassString()],
+                'containerOuter' => ['choices', $this->getElementClass()],
             ],
             'loadingText'       => trans('admin.choices.loadingText'),
             'noResultsText'     => trans('admin.choices.noResultsText'),

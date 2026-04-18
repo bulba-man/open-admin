@@ -32,6 +32,8 @@
             }
 
             var load = function (url) {
+                modal_elm.querySelector('.modal-body').innerHTML = '<div class="loading text-center"> <div class="icon-spin"><i class="icon-spinner icon-spin icon-3x icon-fw"></i></div></div>';
+
                 admin.ajax.request(url, {}, function (data) {
                     modal_elm.querySelector('.modal-body').innerHTML = data.data;
 
@@ -57,6 +59,8 @@
                     })
                 });
             };
+
+            this.load = load;
 
             modal_elm.ref = this;
             modal_elm.modal = modal;
@@ -89,10 +93,17 @@
 
             modal_elm.querySelector('.modal-footer .submit').addEventListener('click', function (event) {
 
+                var updateResult;
                 if (typeof(config.update) != 'undefined'){
-                    config.update(values,rows,related);
+                    updateResult = config.update(values,rows,related);
                 }
-                modal.hide();
+
+                if (updateResult === 'reload') {
+                    load(config.url);
+                } else if (updateResult === 'cancel') {
+                } else {
+                    modal.hide();
+                }
 
                 event.preventDefault();
                 event.stopPropagation();
