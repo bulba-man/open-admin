@@ -12,6 +12,8 @@ class SwitchField extends Field
 
     protected $cascadeEvent = 'change';
 
+    protected $default_on_empty = 0;
+
     protected $options = [
         'on' => '1',
         'off' => '0',
@@ -23,15 +25,25 @@ class SwitchField extends Field
             return $value;
         }
 
-        $value = trim($value);
+        if (is_string($value)) {
+            $value = trim($value);
 
-        if (strtolower($value) === 'true' || strtolower($value) === 'false') {
-            $value = filter_var(   $value, FILTER_VALIDATE_BOOLEAN);
-        } elseif (is_numeric($value)) {
+            if (empty($value)) {
+                $value = $this->default_on_empty;
+            } elseif (strtolower($value) === 'true' || strtolower($value) === 'false') {
+                $value = filter_var(   $value, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+
+        if (is_null($value)) {
+            $value = $this->default_on_empty;
+        }
+
+        if (is_numeric($value)) {
             $value = filter_var(   $value, FILTER_VALIDATE_INT);
         }
 
-        return $value;
+        return parent::prepare($value);
     }
 
     public function values(string $on = '1', string $off = '0'): static
