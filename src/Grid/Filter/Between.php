@@ -86,6 +86,10 @@ class Between extends AbstractFilter
 
         $this->value = Arr::get($inputs, $this->column);
 
+        if (!is_array($this->value)) {
+            $this->value = ['start' => $this->value, 'end' => ''];
+        }
+
         $value = array_filter($this->value, function ($val) {
             return $val !== '';
         });
