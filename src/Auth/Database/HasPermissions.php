@@ -38,7 +38,23 @@ trait HasPermissions
             return true;
         }
 
-        return $this->roles->pluck('permissions')->flatten()->pluck('slug')->contains($ability);
+        $permissions = $this->roles->pluck('permissions')->flatten()->pluck('slug');
+
+        if ($permissions->contains($ability)) {
+            return true;
+        }
+
+        $parts = explode('.', $ability);
+
+        $segments = [];
+        $current = '';
+
+        foreach ($parts as $part) {
+            $current = $current ? "{$current}.{$part}" : $part;
+            $segments[] = $current;
+        }
+
+        return $permissions->intersect($segments)->isNotEmpty();
     }
 
     /**
@@ -60,7 +76,7 @@ trait HasPermissions
      */
     public function isAdministrator(): bool
     {
-        return $this->isRole('administrator');
+        return $this->inRoles(['administrator', 'developer', 'dev']);
     }
 
     /**
