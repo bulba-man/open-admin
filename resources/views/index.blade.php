@@ -12,6 +12,14 @@
     <link rel="shortcut icon" href="{{$favicon}}">
     @endif
 
+    <script>
+        function LA() {}
+        LA.token = "{{ csrf_token() }}";
+        LA.refresh_csrf_url = "{{ route('refresh-csrf') }}";
+        LA.refresh_csrf_interval = "{{ config('admin.auth.refresh_csrf_interval', 600) }}";
+        LA.user = @json($_user_);
+    </script>
+
     {!! Admin::css() !!}
     {!! Admin::headerJs() !!}
     {!! Admin::js() !!}
@@ -59,12 +67,6 @@
     @if(config('admin.use_custom_prompts'))
         @include('admin::partials.modal-prompt')
     @endif
-
-    <script>
-        function LA() {}
-        LA.token = "{{ csrf_token() }}";
-        LA.user = @json($_user_);
-    </script>
 
     </body>
 </html>

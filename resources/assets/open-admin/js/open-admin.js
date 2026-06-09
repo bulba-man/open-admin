@@ -270,6 +270,8 @@ admin.ajax = {
         // NProgress.configure({ parent: '#main' });
 
         document.dispatchEvent(admin.ajaxInitedEvent);
+
+        setInterval(admin.ajax.refreshCsrfToken, LA.refresh_csrf_interval * 1000);
     },
 
     // use navigate when you want history working
@@ -430,6 +432,25 @@ admin.ajax = {
             console.log(error);
         }
     },
+
+    refreshCsrfToken: function () {
+        fetch(LA.refresh_csrf_url)
+            .then(response => response.json())
+            .then(data => {
+                LA.token = data.token;
+
+                document.querySelectorAll("input[name=\'_token\']").forEach(input => {
+                    input.value = data.token;
+                });
+
+                let metaTag = document.querySelector("meta[name=\'csrf-token\']");
+                if (metaTag) {
+                    metaTag.setAttribute("content", data.token);
+                }
+
+            })
+            .catch(error => console.error("Error refreshing CSRF token:", error));
+    }
 };
 
 admin.pages = {

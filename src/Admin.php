@@ -341,6 +341,15 @@ class Admin
             $router->get('auth/setting', $authController.'@getSetting')->name('admin.setting');
             $router->put('auth/setting', $authController.'@putSetting');
         });
+
+        app('router')->group([
+            'prefix'     => config('admin.route.prefix'),
+            'middleware' => ['web', 'admin.auth']
+        ], function ($router) {
+            $router->get('refresh-csrf', function () {
+                return response()->json(['token' => csrf_token()]);
+            })->name('refresh-csrf');
+        });
     }
 
     /**

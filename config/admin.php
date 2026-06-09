@@ -144,6 +144,8 @@ return [
             'auth/login',
             'auth/logout',
         ],
+
+        'refresh_csrf_interval' => env('ADMIN_REFRESH_CSRF_INTERVAL', 600)
     ],
 
     /*
