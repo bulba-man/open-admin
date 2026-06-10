@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Validator;
+use OpenAdmin\Admin\Exception\FormPrepareException;
+use OpenAdmin\Admin\Exception\FormSavedException;
+use OpenAdmin\Admin\Exception\FormValidationException;
 use OpenAdmin\Admin\Exception\Handler;
 use OpenAdmin\Admin\Form\Builder;
 use OpenAdmin\Admin\Form\Concerns\HandleCascadeFields;
@@ -343,15 +346,34 @@ class Form implements Renderable
      */
     public function store()
     {
+        try {
+            $this->saveNew();
+        } catch (FormValidationException $exception) {
+            return $exception->getResponse();
+        } catch (FormPrepareException $exception) {
+            return $exception->getResponse();
+        } catch (FormSavedException $exception) {
+            return $exception->getResponse();
+        }
+
+        if ($response = $this->ajaxResponse(trans('admin.save_succeeded'))) {
+            return $response;
+        }
+
+        return $this->redirectAfterStore();
+    }
+
+    public function saveNew()
+    {
         $data = \request()->all();
 
         // Handle validation errors.
         if ($validationMessages = $this->validationMessages($data)) {
-            return $this->responseValidationError($validationMessages);
+            throw new FormValidationException($validationMessages, $this->responseValidationError($validationMessages));
         }
 
         if (($response = $this->prepare($data)) instanceof Response) {
-            return $response;
+            throw new FormPrepareException($response);
         }
 
         DB::transaction(function () {
@@ -368,14 +390,8 @@ class Form implements Renderable
         });
 
         if (($response = $this->callSaved()) instanceof Response) {
-            return $response;
+            throw new FormSavedException($response);
         }
-
-        if ($response = $this->ajaxResponse(trans('admin.save_succeeded'))) {
-            return $response;
-        }
-
-        return $this->redirectAfterStore();
     }
 
     /**
@@ -541,6 +557,30 @@ class Form implements Renderable
      */
     public function update($id, $data = null)
     {
+        $response = null;
+        try {
+            $response = $this->saveExisting($id, $data);
+        } catch (FormValidationException $exception) {
+            return $exception->getResponse();
+        } catch (FormPrepareException $exception) {
+            return $exception->getResponse();
+        } catch (FormSavedException $exception) {
+            return $exception->getResponse();
+        }
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        if ($response = $this->ajaxResponse(trans('admin.update_succeeded'))) {
+            return $response;
+        }
+
+        return $this->redirectAfterUpdate($id);
+    }
+
+    public function saveExisting($id, $data = null)
+    {
         $data = ($data) ?: request()->all();
 
         $isEditable = $this->isEditable($data);
@@ -563,14 +603,16 @@ class Form implements Renderable
         // Handle validation errors.
         if ($validationMessages = $this->validationMessages($data)) {
             if (!$isEditable) {
-                return back()->withInput()->withErrors($validationMessages);
+                $response = back()->withInput()->withErrors($validationMessages);
+            } else {
+                $response = response()->json(['errors' => Arr::dot($validationMessages->getMessages())], 422);
             }
 
-            return response()->json(['errors' => Arr::dot($validationMessages->getMessages())], 422);
+            throw new FormValidationException($validationMessages, $response);
         }
 
         if (($response = $this->prepare($data)) instanceof Response) {
-            return $response;
+            throw new FormPrepareException($response);
         }
 
         DB::transaction(function () {
@@ -586,15 +628,9 @@ class Form implements Renderable
             $this->updateRelation($this->relations, $this->model);
         });
 
-        if (($result = $this->callSaved()) instanceof Response) {
-            return $result;
+        if (($response = $this->callSaved()) instanceof Response) {
+            throw new FormSavedException($response);
         }
-
-        if ($response = $this->ajaxResponse(trans('admin.update_succeeded'))) {
-            return $response;
-        }
-
-        return $this->redirectAfterUpdate($id);
     }
 
     /**

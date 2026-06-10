@@ -86,13 +86,15 @@ trait CanCascadeFields
      *
      * @return string
      */
-    protected function getCascadeClass($value)
+    protected function getCascadeClass($value, $asSelector = false)
     {
         if (is_array($value)) {
             $value = implode('-', $value);
         }
 
-        return sprintf('cascade-%s-%s', $this->getElementClassString(), $value);
+        $class = (!$asSelector) ? $this->getElementClassString() : ltrim($this->getElementClassSelector(), '.');
+
+        return sprintf('cascade-%s-%s', $class, $value);
     }
 
     /**
@@ -176,7 +178,7 @@ trait CanCascadeFields
 
         $cascadeGroups = collect($this->conditions)->map(function ($condition) {
             return [
-                'class'    => $this->getCascadeClass($condition['value']),
+                'class'    => $this->getCascadeClass($condition['value'], true),
                 'operator' => $condition['operator'],
                 'value'    => $condition['value'],
             ];

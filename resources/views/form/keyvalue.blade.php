@@ -14,7 +14,7 @@
                 <th style="width: 75px;"></th>
             </tr>
             </thead>
-            <tbody class="kv-{{$column}}-table">
+            <tbody class="kv-{{$id}}-table">
 
             @foreach(old("{$column}.keys", ($value ?: [])) as $k => $v)
 
@@ -53,7 +53,7 @@
 
                     <td class="form-group">
                         <div>
-                            <div class="{{$column}}-remove btn btn-danger btn-sm pull-right">
+                            <div class="{{$id}}-remove btn btn-danger btn-sm pull-right">
                                 <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
                             </div>
                         </div>
@@ -63,12 +63,12 @@
             </tbody>
 
         </table>
-        <div class="{{ $column }}-add btn btn-success btn-sm pull-right">
+        <div class="{{ $id }}-add btn btn-success btn-sm pull-right">
             <i class="icon-plus"></i>&nbsp;{{ __('admin.new') }}
         </div>
 
     </div>
-    <template class="{{$column}}-tpl">
+    <template class="{{$id}}-tpl">
         <tr>
             @if(!empty($options['sortable']))
                 <td width="20"><span class="icon-arrows-alt-v btn btn-light handle"></span></td>
@@ -90,7 +90,7 @@
 
             <td class="form-group">
                 <div>
-                    <div class="{{$column}}-remove btn btn-danger btn-sm pull-right">
+                    <div class="{{$id}}-remove btn btn-danger btn-sm pull-right">
                         <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
                     </div>
                 </div>

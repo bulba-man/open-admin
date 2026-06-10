@@ -15,6 +15,8 @@ class KeyValue extends Field
      */
     protected $value = ['' => ''];
 
+    protected $useRandomSelector = false;
+
     /**
      * Fill data to the field.
      *
@@ -29,6 +31,13 @@ class KeyValue extends Field
         $this->value = Arr::get($data, $this->column, $this->value);
 
         $this->formatValue();
+    }
+
+    public function useRandomSelector(bool $useRandomSelector = true)
+    {
+        $this->useRandomSelector = $useRandomSelector;
+
+        return $this;
     }
 
     /**
@@ -66,14 +75,14 @@ class KeyValue extends Field
     {
         $this->script = <<<JS
 
-document.querySelector('.{$this->column}-add').addEventListener('click', function () {
-    var tpl = document.querySelector('template.{$this->column}-tpl').innerHTML;
+document.querySelector('.{$this->getId()}-add').addEventListener('click', function () {
+    var tpl = document.querySelector('template.{$this->getId()}-tpl').innerHTML;
     var clone = htmlToElement(tpl);
-    document.querySelector('tbody.kv-{$this->column}-table').appendChild(clone);
+    document.querySelector('tbody.kv-{$this->getId()}-table').appendChild(clone);
 });
 
-document.querySelector('tbody.kv-{$this->column}-table').addEventListener('click', function (event) {
-    if (event.target.classList.contains('{$this->column}-remove')){
+document.querySelector('tbody.kv-{$this->getId()}-table').addEventListener('click', function (event) {
+    if (event.target.classList.contains('{$this->getId()}-remove')){
         event.target.closest('tr').remove();
     }
 });
@@ -102,6 +111,10 @@ JS;
 
     public function render()
     {
+        if ($this->useRandomSelector) {
+            $this->setId(uniqid($this->getId()));
+        }
+
         $this->addSortable('.kv-', '-table');
         view()->share('options', $this->options);
 
