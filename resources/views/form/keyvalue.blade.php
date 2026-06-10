@@ -9,8 +9,8 @@
                 @if(!empty($options['sortable']))
                     <th></th>
                 @endif
-                <th>{{ __('Key') }}</th>
-                <th>{{ __('Value') }}</th>
+                <th>{{ __($labels['keys']) }}</th>
+                <th>{{ __($labels['values']) }}</th>
                 <th style="width: 75px;"></th>
             </tr>
             </thead>
