@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Validator;
+use OpenAdmin\Admin\Exception\FormPrepareException;
+use OpenAdmin\Admin\Exception\FormSavedException;
+use OpenAdmin\Admin\Exception\FormValidationException;
 use OpenAdmin\Admin\Exception\Handler;
 use OpenAdmin\Admin\Form\Builder;
 use OpenAdmin\Admin\Form\Concerns\HandleCascadeFields;
@@ -343,15 +346,34 @@ class Form implements Renderable
      */
     public function store()
     {
+        try {
+            $this->save();
+        } catch (FormValidationException $exception) {
+            return $exception->getResponse();
+        } catch (FormPrepareException $exception) {
+            return $exception->getResponse();
+        } catch (FormSavedException $exception) {
+            return $exception->getResponse();
+        }
+
+        if ($response = $this->ajaxResponse(trans('admin.save_succeeded'))) {
+            return $response;
+        }
+
+        return $this->redirectAfterStore();
+    }
+
+    public function save()
+    {
         $data = \request()->all();
 
         // Handle validation errors.
         if ($validationMessages = $this->validationMessages($data)) {
-            return $this->responseValidationError($validationMessages);
+            throw new FormValidationException($validationMessages, $this->responseValidationError($validationMessages));
         }
 
         if (($response = $this->prepare($data)) instanceof Response) {
-            return $response;
+            throw new FormPrepareException($response);
         }
 
         DB::transaction(function () {
@@ -368,14 +390,8 @@ class Form implements Renderable
         });
 
         if (($response = $this->callSaved()) instanceof Response) {
-            return $response;
+            throw new FormSavedException($response);
         }
-
-        if ($response = $this->ajaxResponse(trans('admin.save_succeeded'))) {
-            return $response;
-        }
-
-        return $this->redirectAfterStore();
     }
 
     /**
