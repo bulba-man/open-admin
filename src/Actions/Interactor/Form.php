@@ -158,10 +158,10 @@ class Form extends Interactor
      *
      * @return Field
      */
-    protected function addField(Field $field)
+    public function addField(Field $field)
     {
         $elementClass = array_merge(['form-control', 'action', $this->getModalId()], $field->getElementClass());
-        $field->setForm($this->getForm());
+        $this->getForm()->pushField($field);
         $field->addElementClass($elementClass);
         $this->checkUploadFiel($field);
 
