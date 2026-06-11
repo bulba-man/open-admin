@@ -6,16 +6,12 @@ use OpenAdmin\Admin\Form\Field;
 
 trait HandleCascadeFields
 {
-    /**
-     * @param array    $dependency
-     * @param \Closure $closure
-     */
     public function cascadeGroup(\Closure $closure, array $dependency)
     {
-        $this->pushField($group = new Field\CascadeGroup($dependency));
+        $this->pushField(new Field\CascadeGroup($dependency));
 
         call_user_func($closure, $this);
 
-        $group->end();
+        $this->html('</div>')->plain();
     }
 }

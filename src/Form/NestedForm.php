@@ -8,53 +8,57 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
+use OpenAdmin\Admin\Form\Concerns\HandleCascadeFields;
+use OpenAdmin\Admin\Form\Field\Hidden;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
 
 /**
  * Class NestedForm.
  *
- * @method Field\Text           text($column, $label = '')
- * @method Field\Checkbox       checkbox($column, $label = '')
- * @method Field\Radio          radio($column, $label = '')
- * @method Field\Select         select($column, $label = '')
+ * @method Field\Text text($column, $label = '')
+ * @method Field\Checkbox checkbox($column, $label = '')
+ * @method Field\Radio radio($column, $label = '')
+ * @method Field\Select select($column, $label = '')
  * @method Field\MultipleSelect multipleSelect($column, $label = '')
- * @method Field\Textarea       textarea($column, $label = '')
- * @method Field\Hidden         hidden($column, $label = '')
- * @method Field\Id             id($column, $label = '')
- * @method Field\Ip             ip($column, $label = '')
- * @method Field\Url            url($column, $label = '')
- * @method Field\Color          color($column, $label = '')
- * @method Field\Email          email($column, $label = '')
- * @method Field\PhoneNumber    phonenumber($column, $label = '')
- * @method Field\Slider         slider($column, $label = '')
- * @method Field\Map            map($latitude, $longitude, $label = '')
- * @method Field\Editor         editor($column, $label = '')
- * @method Field\File           file($column, $label = '')
- * @method Field\Image          image($column, $label = '')
- * @method Field\Date           date($column, $label = '')
- * @method Field\Datetime       datetime($column, $label = '')
- * @method Field\Time           time($column, $label = '')
- * @method Field\Year           year($column, $label = '')
- * @method Field\Month          month($column, $label = '')
- * @method Field\DateRange      dateRange($start, $end, $label = '')
- * @method Field\DateTimeRange  datetimeRange($start, $end, $label = '')
- * @method Field\TimeRange      timeRange($start, $end, $label = '')
- * @method Field\Number         number($column, $label = '')
- * @method Field\Currency       currency($column, $label = '')
- * @method Field\HasMany        hasMany($relationName, $callback)
- * @method Field\SwitchField    switch($column, $label = '')
- * @method Field\Display        display($column, $label = '')
- * @method Field\Rate           rate($column, $label = '')
- * @method Field\Divide         divider()
- * @method Field\Password       password($column, $label = '')
- * @method Field\Decimal        decimal($column, $label = '')
- * @method Field\Html           html($html, $label = '')
- * @method Field\Tags           tags($column, $label = '')
- * @method Field\Icon           icon($column, $label = '')
- * @method Field\Embeds         embeds($column, $label = '')
+ * @method Field\Textarea textarea($column, $label = '')
+ * @method Field\Hidden hidden($column, $label = '')
+ * @method Field\Id id($column, $label = '')
+ * @method Field\Ip ip($column, $label = '')
+ * @method Field\Url url($column, $label = '')
+ * @method Field\Color color($column, $label = '')
+ * @method Field\Email email($column, $label = '')
+ * @method Field\PhoneNumber phonenumber($column, $label = '')
+ * @method Field\Slider slider($column, $label = '')
+ * @method Field\Map map($latitude, $longitude, $label = '')
+ * @method Field\Editor editor($column, $label = '')
+ * @method Field\File file($column, $label = '')
+ * @method Field\Image image($column, $label = '')
+ * @method Field\Date date($column, $label = '')
+ * @method Field\Datetime datetime($column, $label = '')
+ * @method Field\Time time($column, $label = '')
+ * @method Field\Year year($column, $label = '')
+ * @method Field\Month month($column, $label = '')
+ * @method Field\DateRange dateRange($start, $end, $label = '')
+ * @method Field\DateTimeRange datetimeRange($start, $end, $label = '')
+ * @method Field\TimeRange timeRange($start, $end, $label = '')
+ * @method Field\Number number($column, $label = '')
+ * @method Field\Currency currency($column, $label = '')
+ * @method Field\HasMany hasMany($relationName, $callback)
+ * @method Field\SwitchField switch($column, $label = '')
+ * @method Field\Display display($column, $label = '')
+ * @method Field\Rate rate($column, $label = '')
+ * @method Field\Divide divider()
+ * @method Field\Password password($column, $label = '')
+ * @method Field\Decimal decimal($column, $label = '')
+ * @method Field\Html html($html, $label = '')
+ * @method Field\Tags tags($column, $label = '')
+ * @method Field\Icon icon($column, $label = '')
+ * @method Field\Embeds embeds($column, $label = '')
  */
 class NestedForm
 {
+    use HandleCascadeFields;
+
     public const DEFAULT_KEY_NAME = '__LA_KEY__';
 
     public const REMOVE_FLAG_NAME = '_remove_';
@@ -93,7 +97,7 @@ class NestedForm
     protected $original = [];
 
     /**
-     * @var \OpenAdmin\Admin\Form|\OpenAdmin\Admin\Widgets\Form
+     * @var Form|WidgetForm
      */
     protected $form;
 
@@ -112,8 +116,8 @@ class NestedForm
      *
      * NestedForm constructor.
      *
-     * @param string $relation
-     * @param Model  $model
+     * @param  string  $relation
+     * @param  Model  $model
      */
     public function __construct($relation, $model = null)
     {
@@ -121,7 +125,7 @@ class NestedForm
 
         $this->model = $model;
 
-        $this->fields = new Collection();
+        $this->fields = new Collection;
     }
 
     /**
@@ -137,8 +141,7 @@ class NestedForm
     /**
      * Save null values or not.
      *
-     * @param bool $set
-     *
+     * @param  bool  $set
      * @return $this
      */
     public function saveNullValues($set = true)
@@ -159,7 +162,7 @@ class NestedForm
             $key = $this->model->getKey();
         }
 
-        if (!is_null($this->key)) {
+        if (! is_null($this->key)) {
             $key = $this->key;
         }
 
@@ -173,8 +176,7 @@ class NestedForm
     /**
      * Set key for current form.
      *
-     * @param mixed $key
-     *
+     * @param  mixed  $key
      * @return $this
      */
     public function setKey($key)
@@ -187,11 +189,10 @@ class NestedForm
     /**
      * Set Form.
      *
-     * @param Form $form
      *
      * @return $this
      */
-    public function setForm(Form $form = null)
+    public function setForm(?Form $form = null)
     {
         $this->form = $form;
 
@@ -201,11 +202,10 @@ class NestedForm
     /**
      * Set Widget/Form.
      *
-     * @param WidgetForm $form
      *
      * @return $this
      */
-    public function setWidgetForm(WidgetForm $form = null)
+    public function setWidgetForm(?WidgetForm $form = null)
     {
         $this->form = $form;
 
@@ -225,9 +225,8 @@ class NestedForm
     /**
      * Set original values for fields.
      *
-     * @param array  $data
-     * @param string $relatedKeyName
-     *
+     * @param  array  $data
+     * @param  string  $relatedKeyName
      * @return $this
      */
     public function setOriginal($data, $relatedKeyName = null)
@@ -253,13 +252,12 @@ class NestedForm
     /**
      * Prepare for insert or update.
      *
-     * @param array $input
-     *
+     * @param  array  $input
      * @return mixed
      */
     public function prepare($input)
     {
-        if (!empty($input)) {
+        if (! empty($input)) {
             foreach ($input as $key => $record) {
                 $this->setFieldOriginalValue($key);
                 $input[$key] = $this->prepareRecord($record);
@@ -272,8 +270,7 @@ class NestedForm
     /**
      * Set original data for each field.
      *
-     * @param string $key
-     *
+     * @param  string  $key
      * @return void
      */
     protected function setFieldOriginalValue($key)
@@ -291,8 +288,7 @@ class NestedForm
     /**
      * Do prepare work before store and update.
      *
-     * @param array $record
-     *
+     * @param  array  $record
      * @return array
      */
     protected function prepareRecord($record)
@@ -317,7 +313,7 @@ class NestedForm
                 $value = $field->prepare($value);
             }
 
-            if (($field instanceof \OpenAdmin\Admin\Form\Field\Hidden) || $value != $field->original() || ($this->save_null_values && $value == null)) {
+            if (($field instanceof Hidden) || $value != $field->original() || ($this->save_null_values && $value == null)) {
                 if (is_array($columns)) {
                     foreach ($columns as $name => $column) {
                         Arr::set($prepared, $column, $value[$name]);
@@ -336,9 +332,8 @@ class NestedForm
     /**
      * Fetch value in input data by column name.
      *
-     * @param array        $data
-     * @param string|array $columns
-     *
+     * @param  array  $data
+     * @param  string|array  $columns
      * @return array|mixed
      */
     protected function fetchColumnValue($data, $columns)
@@ -350,7 +345,7 @@ class NestedForm
         if (is_array($columns)) {
             $value = [];
             foreach ($columns as $name => $column) {
-                if (!Arr::has($data, $column)) {
+                if (! Arr::has($data, $column)) {
                     continue;
                 }
                 $value[$name] = Arr::get($data, $column);
@@ -361,12 +356,12 @@ class NestedForm
     }
 
     /**
-     * @param Field $field
-     *
      * @return $this
      */
     public function pushField(Field $field)
     {
+        $field->setCascadeContainer($this);
+
         $this->fields->push($field);
 
         return $this;
@@ -385,7 +380,6 @@ class NestedForm
     /**
      * Fill data to all fields in form.
      *
-     * @param array $data
      *
      * @return $this
      */
@@ -402,7 +396,6 @@ class NestedForm
     /**
      * Field can be reset to default value
      *
-     * @param bool $resettable
      * @return $this
      */
     public function resettable(bool $resettable = true): static
@@ -420,8 +413,7 @@ class NestedForm
     /**
      * Format the name of the field.
      *
-     * @param string $column
-     *
+     * @param  string  $column
      * @return array|mixed|string
      */
     protected function formatName($column)
@@ -464,12 +456,12 @@ class NestedForm
      */
     public function getTemplateHtmlAndScript()
     {
-        $html    = '';
+        $html = '';
         $scripts = [];
 
         /* @var Field $field */
         foreach ($this->fields() as $field) {
-            //when field render, will push $script to Admin
+            // when field render, will push $script to Admin
             $html .= $field->render();
 
             /*
@@ -486,7 +478,6 @@ class NestedForm
     /**
      * Set `errorKey` `elementName` `elementClass` for fields inside hasmany fields.
      *
-     * @param Field $field
      *
      * @return Field
      */
@@ -500,13 +491,13 @@ class NestedForm
 
         if (is_array($column)) {
             foreach ($column as $k => $name) {
-                $errorKey[$k]     = sprintf('%s.%s.%s', $this->relationName, $key, $name);
-                $elementName[$k]  = sprintf('%s[%s][%s]', $this->formatName($this->relationName), $key, $name);
+                $errorKey[$k] = sprintf('%s.%s.%s', $this->relationName, $key, $name);
+                $elementName[$k] = sprintf('%s[%s][%s]', $this->formatName($this->relationName), $key, $name);
                 $elementClass[$k] = [$this->relationName, $name];
             }
         } else {
-            $errorKey     = sprintf('%s.%s.%s', $this->relationName, $key, $column);
-            $elementName  = sprintf('%s[%s][%s]', $this->formatName($this->relationName), $key, $column);
+            $errorKey = sprintf('%s.%s.%s', $this->relationName, $key, $column);
+            $elementName = sprintf('%s[%s][%s]', $this->formatName($this->relationName), $key, $column);
             $elementClass = [$this->relationName, $column];
         }
 
@@ -518,9 +509,8 @@ class NestedForm
     /**
      * Add nested-form fields dynamically.
      *
-     * @param string $method
-     * @param array  $arguments
-     *
+     * @param  string  $method
+     * @param  array  $arguments
      * @return mixed
      */
     public function __call($method, $arguments)

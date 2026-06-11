@@ -3,8 +3,13 @@
 namespace OpenAdmin\Admin\Form\Field\Traits;
 
 use Illuminate\Support\Arr;
-use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
+use OpenAdmin\Admin\Form\Field\CascadeGroup;
+use OpenAdmin\Admin\Form\Field\Checkbox;
+use OpenAdmin\Admin\Form\Field\MultipleSelect;
+use OpenAdmin\Admin\Form\Field\Radio;
+use OpenAdmin\Admin\Form\Field\Select;
+use OpenAdmin\Admin\Form\Field\SwitchField;
 
 /**
  * @property Form $form
@@ -17,10 +22,6 @@ trait CanCascadeFields
     protected $conditions = [];
 
     /**
-     * @param $operator
-     * @param $value
-     * @param $closure
-     *
      * @return $this
      */
     public function when($operator, $value, $closure = null)
@@ -39,12 +40,11 @@ trait CanCascadeFields
     }
 
     /**
-     * @param string $operator
-     * @param mixed  $value
+     * @param  mixed  $value
      */
     protected function formatValues(string $operator, &$value)
     {
-        if (in_array($operator, ['in', 'notIn'])) {
+        if (in_array($operator, ['in', 'notIn', 'oneIn', 'oneNotIn'])) {
             $value = Arr::wrap($value);
         }
 
@@ -56,18 +56,18 @@ trait CanCascadeFields
     }
 
     /**
-     * @param string   $operator
-     * @param mixed    $value
-     * @param \Closure $closure
+     * @param  mixed  $value
      */
     protected function addDependents(string $operator, $value, \Closure $closure)
     {
+        $index = count($this->conditions);
+
         $this->conditions[] = compact('operator', 'value', 'closure');
 
-        $this->form->cascadeGroup($closure, [
+        $this->getCascadeContainer()->cascadeGroup($closure, [
             'column' => $this->column(),
-            'index'  => count($this->conditions) - 1,
-            'class'  => $this->getCascadeClass($value),
+            'index' => $index,
+            'class' => $this->getCascadeClass($value, $index),
         ]);
     }
 
@@ -82,19 +82,17 @@ trait CanCascadeFields
     }
 
     /**
-     * @param mixed $value
-     *
+     * @param  mixed  $value
      * @return string
      */
-    protected function getCascadeClass($value, $asSelector = false)
+    protected function getCascadeClass($value, ?int $index = null)
     {
-        if (is_array($value)) {
-            $value = implode('-', $value);
+        $selector = $this->getElementClassSelector();
+        if (is_array($selector)) {
+            $selector = implode('|', $selector);
         }
 
-        $class = (!$asSelector) ? $this->getElementClassString() : ltrim($this->getElementClassSelector(), '.');
-
-        return sprintf('cascade-%s-%s', $class, $value);
+        return 'cascade-group-'.md5($selector.'|'.$index.'|'.serialize($value));
     }
 
     /**
@@ -104,22 +102,24 @@ trait CanCascadeFields
      */
     protected function applyCascadeConditions()
     {
-        if ($this->form) {
-            $this->form->fields()
+        $container = $this->getCascadeContainer();
+
+        if ($container && method_exists($container, 'fields')) {
+            $container->fields()
                 ->filter(function (Form\Field $field) {
                     return $field instanceof CascadeGroup
                         && $field->dependsOn($this)
                         && $this->hitsCondition($field);
-                })->each->visiable();
+                })->each(function (CascadeGroup $field) {
+                    $field->visiable();
+                });
         }
     }
 
     /**
-     * @param CascadeGroup $group
+     * @return bool
      *
      * @throws \Exception
-     *
-     * @return bool
      */
     protected function hitsCondition(CascadeGroup $group)
     {
@@ -145,28 +145,20 @@ trait CanCascadeFields
             case 'in':
                 return in_array($old, $value);
             case 'notIn':
-                return !in_array($old, $value);
+                return ! in_array($old, $value);
             case 'has':
-                return in_array($value, $old);
+                return in_array($value, (array) $old);
             case 'oneIn':
-                return count(array_intersect($value, $old)) >= 1;
+                return count(array_intersect($value, (array) $old)) >= 1;
             case 'oneNotIn':
-                return count(array_intersect($value, $old)) == 0;
+                return count(array_intersect($value, (array) $old)) == 0;
             default:
                 throw new \Exception("Operator [$operator] not support.");
         }
     }
 
     /**
-     * Js Value.
-     */
-    protected function getValueByJs()
-    {
-        return addslashes(old($this->column(), $this->value()));
-    }
-
-    /**
-     * Add cascade scripts to contents.
+     * Add cascade data to the source field.
      *
      * @return void
      */
@@ -176,109 +168,54 @@ trait CanCascadeFields
             return;
         }
 
-        $cascadeGroups = collect($this->conditions)->map(function ($condition) {
+        $cascadeGroups = collect($this->conditions)->map(function ($condition, $index) {
             return [
-                'class'    => $this->getCascadeClass($condition['value'], true),
+                'class' => $this->getCascadeClass($condition['value'], $index),
                 'operator' => $condition['operator'],
-                'value'    => $condition['value'],
+                'value' => $condition['value'],
             ];
-        })->toJson();
+        })->values()->toJson();
 
-        $script = <<<SCRIPT
-;(function () {
-    var inArray = function (find,arr){
-        return arr.indexOf(find);
-    }
-    var operator_table = {
-        '=': function(a, b) {
-            if (Array.isArray(a) && Array.isArray(b)) {
-                a.sort();
-                b.sort();
-                return a.join() == b.join()
-            }
-            return a == b;
-        },
-        '>': function(a, b) { return a > b; },
-        '<': function(a, b) { return a < b; },
-        '>=': function(a, b) { return a >= b; },
-        '<=': function(a, b) { return a <= b; },
-        '!=': function(a, b) {
+        $attributes = [
+            'data-cascade-event' => $this->cascadeEvent,
+            'data-cascade-groups' => $cascadeGroups,
+            'data-cascade-type' => $this->getCascadeInputType(),
+            'data-cascade-selector' => $this->getElementClassSelector(),
+        ];
 
-            if (Array.isArray(a) && Array.isArray(b)) {
-                a.sort();
-                b.sort();
-                return !(a.join() == b.join())
-            }
-
-             return a != b;
-        },
-        'in': function(a, b) { return inArray(a, b) != -1; },
-        'notIn': function(a, b) { return inArray(a, b) == -1; },
-        'has': function(a, b) { return inArray(b, a) != -1; },
-        'oneIn': function(a, b) { return a.filter(v => b.includes(v)).length >= 1; },
-        'oneNotIn': function(a, b) { return a.filter(v => b.includes(v)).length == 0; },
-    };
-    var cascade_groups = {$cascadeGroups};
-
-    cascade_groups.forEach(function (event) {
-        var default_value = '{$this->getValueByJs()}' + '';
-        var class_name = event.class;
-        if( operator_table[event.operator](default_value, event.value) ) {
-            document.querySelector('.'+class_name+'').classList.remove('d-none');
-        }else{
-            document.querySelector('.'+class_name+'').classList.add('d-none');
+        if ($this->getCascadeInputType() === 'switch') {
+            $attributes['data-cascade-switch-on'] = $this->options['on'];
+            $attributes['data-cascade-switch-off'] = $this->options['off'];
         }
-    });
 
-    document.querySelectorAll('{$this->getElementClassSelector()}').forEach( el =>{
-        el.addEventListener('{$this->cascadeEvent}', function (e) {
-            {$this->getFormFrontValue()}
-            cascade_groups.forEach(function (event) {
-                var group = document.querySelector('div.cascade-group.'+event.class);
-                if( operator_table[event.operator](checked, event.value) ) {
-                    group.classList.remove('d-none');
-                } else {
-                    group.classList.add('d-none');
-                }
-            });
-        });
-    })
-    function getValuesFrom(selector){
-        var arr = []
-        document.querySelectorAll(selector).forEach(el=>{
-            arr.push(el.value);
-        });
-        return arr;
-    }
-})();
-SCRIPT;
-
-        Admin::script($script);
+        $this->attribute($attributes);
     }
 
     /**
      * @return string
      */
-    protected function getFormFrontValue()
+    protected function getCascadeInputType()
     {
-        $check_class = str_replace("\Field\\", "\Field\Traits\\", get_class($this));
-        switch ($check_class) {
-            case SwitchField::class:
-                return "var checked = document.querySelector('#{$this->id}').value";
-            case Radio::class:
-            case RadioButton::class:
-            case RadioCard::class:
-            case Select::class:
-            case BelongsTo::class:
-            case BelongsToMany::class:
-            case MultipleSelect::class:
-                return 'var checked = this.value;';
-            case Checkbox::class:
-            case CheckboxButton::class:
-            case CheckboxCard::class:
-                return "var checked = getValuesFrom('{$this->getElementClassSelector()}:checked')";
-            default:
-                throw new \InvalidArgumentException('Invalid form field type');
+        if ($this instanceof SwitchField) {
+            return 'switch';
         }
+
+        if ($this instanceof Radio) {
+            return 'radio';
+        }
+
+        if ($this instanceof Checkbox) {
+            return 'checkbox';
+        }
+
+        if ($this instanceof MultipleSelect) {
+            return 'select-multiple';
+        }
+
+        if ($this instanceof Select) {
+            return 'select';
+        }
+
+        throw new \InvalidArgumentException('Invalid form field type');
     }
 }

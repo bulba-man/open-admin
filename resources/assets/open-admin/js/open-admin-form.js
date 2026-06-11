@@ -6,12 +6,14 @@ admin.form = {
     id: false,
     tabs_ref: false,
     beforeSaveCallbacks: [],
+    cascadeEventsBound: false,
 
     init: function () {
         this.addAjaxSubmit();
         this.footer();
         this.tabs();
         this.initValidation();
+        this.cascade();
         this.resettable();
     },
 
@@ -135,14 +137,229 @@ admin.form = {
     },
 
     disable_cascaded_forms: function (selector) {
-        document.querySelector(selector).addEventListener('submit', function (event) {
-            let elems = event.target.querySelectorAll('div.cascade-group.d-none input');
-            if (elems) {
-                elems.forEach((field) => {
-                    field.setAttribute('disabled', true);
-                });
+        let form = document.querySelector(selector);
+
+        if (!form || form.dataset.cascadeSubmitInitialized === '1') {
+            return;
+        }
+
+        form.dataset.cascadeSubmitInitialized = '1';
+
+        form.addEventListener('submit', function (event) {
+            admin.form.disableHiddenCascadeGroups(event.target);
+        });
+    },
+
+    disableHiddenCascadeGroups: function (form) {
+        form.querySelectorAll('div.cascade-group.d-none, div.cascade-group.hide').forEach((group) => {
+            admin.form.setCascadeGroupFieldsDisabled(group, true);
+        });
+    },
+
+    cascade: function (container) {
+        container = container || document;
+
+        this.bindCascadeEvents();
+
+        let fields = [];
+
+        if (container.matches && container.matches('[data-cascade-groups]')) {
+            fields.push(container);
+        }
+
+        container.querySelectorAll('[data-cascade-groups]').forEach((field) => {
+            fields.push(field);
+        });
+
+        fields.forEach((field) => {
+            this.updateCascade(field);
+        });
+    },
+
+    bindCascadeEvents: function () {
+        if (this.cascadeEventsBound) {
+            return;
+        }
+
+        this.cascadeEventsBound = true;
+
+        document.addEventListener('change', function (event) {
+            if (!event.target || !event.target.closest) {
+                return;
+            }
+
+            let field = event.target.closest('[data-cascade-groups]');
+
+            if (!field || (field.dataset.cascadeEvent || 'change') !== event.type) {
+                return;
+            }
+
+            admin.form.updateCascade(field);
+        });
+    },
+
+    updateCascade: function (field) {
+        let groups = this.getCascadeGroups(field);
+        let scope = this.getCascadeScope(field);
+        let value = this.getCascadeValue(field, scope);
+
+        groups.forEach((settings) => {
+            let selector = 'div.cascade-group.' + this.escapeCascadeSelector(settings.class);
+
+            scope.querySelectorAll(selector).forEach((group) => {
+                this.setCascadeGroupVisibility(group, this.compareCascadeValues(value, settings.operator, settings.value));
+            });
+        });
+    },
+
+    getCascadeGroups: function (field) {
+        try {
+            return JSON.parse(field.getAttribute('data-cascade-groups') || '[]');
+        } catch (e) {
+            return [];
+        }
+    },
+
+    getCascadeScope: function (field) {
+        return field.closest('.fields-group') || field.closest('form') || document;
+    },
+
+    escapeCascadeSelector: function (selector) {
+        if (window.CSS && typeof window.CSS.escape === 'function') {
+            return window.CSS.escape(selector);
+        }
+
+        return selector;
+    },
+
+    getCascadeValue: function (field, scope) {
+        let type = field.getAttribute('data-cascade-type');
+
+        if (type === 'switch') {
+            return field.checked
+                ? field.getAttribute('data-cascade-switch-on')
+                : field.getAttribute('data-cascade-switch-off');
+        }
+
+        if (type === 'checkbox') {
+            return this.getCheckedCascadeValues(field, scope);
+        }
+
+        if (type === 'radio') {
+            let selector = field.getAttribute('data-cascade-selector');
+
+            if (!selector) {
+                return '';
+            }
+
+            let checked = scope.querySelector(selector + ':checked');
+
+            return checked ? checked.value : '';
+        }
+
+        if (type === 'select-multiple' || field.multiple) {
+            return Array.from(field.selectedOptions).map((option) => option.value);
+        }
+
+        return field.value;
+    },
+
+    getCheckedCascadeValues: function (field, scope) {
+        let values = [];
+        let selector = field.getAttribute('data-cascade-selector');
+
+        if (!selector) {
+            return values;
+        }
+
+        scope.querySelectorAll(selector + ':checked').forEach((checked) => {
+            values.push(checked.value);
+        });
+
+        return values;
+    },
+
+    setCascadeGroupVisibility: function (group, visible) {
+        let wasVisible = !group.classList.contains('d-none') && !group.classList.contains('hide');
+
+        group.classList.toggle('d-none', !visible);
+        group.classList.toggle('hide', !visible);
+
+        this.setCascadeGroupFieldsDisabled(group, !visible);
+
+        if (visible && !wasVisible) {
+            this.cascade(group);
+        }
+    },
+
+    setCascadeGroupFieldsDisabled: function (group, disabled) {
+        group.querySelectorAll('input, select, textarea, button').forEach((field) => {
+            if (disabled) {
+                if (!field.disabled) {
+                    field.dataset.cascadeDisabled = '1';
+                    field.disabled = true;
+                }
+
+                return;
+            }
+
+            if (field.dataset.cascadeDisabled === '1') {
+                field.disabled = false;
+                delete field.dataset.cascadeDisabled;
             }
         });
+    },
+
+    normalizeCascadeValue: function (value) {
+        if (Array.isArray(value)) {
+            return value.map((item) => String(item));
+        }
+
+        if (value === null || typeof value === 'undefined') {
+            return '';
+        }
+
+        return String(value);
+    },
+
+    compareCascadeValues: function (currentValue, operator, expectedValue) {
+        let current = this.normalizeCascadeValue(currentValue);
+        let expected = this.normalizeCascadeValue(expectedValue);
+
+        switch (operator) {
+            case '=':
+                if (Array.isArray(current) && Array.isArray(expected)) {
+                    return current.slice().sort().join() === expected.slice().sort().join();
+                }
+
+                return current == expected;
+            case '>':
+                return current > expected;
+            case '<':
+                return current < expected;
+            case '>=':
+                return current >= expected;
+            case '<=':
+                return current <= expected;
+            case '!=':
+                if (Array.isArray(current) && Array.isArray(expected)) {
+                    return current.slice().sort().join() !== expected.slice().sort().join();
+                }
+
+                return current != expected;
+            case 'in':
+                return Array.isArray(expected) && expected.indexOf(current) !== -1;
+            case 'notIn':
+                return !Array.isArray(expected) || expected.indexOf(current) === -1;
+            case 'has':
+                return Array.isArray(current) && current.indexOf(expected) !== -1;
+            case 'oneIn':
+                return Array.isArray(current) && Array.isArray(expected) && current.filter((value) => expected.includes(value)).length >= 1;
+            case 'oneNotIn':
+                return !Array.isArray(current) || !Array.isArray(expected) || current.filter((value) => expected.includes(value)).length === 0;
+            default:
+                return false;
+        }
     },
 
     initValidation: function () {
