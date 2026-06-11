@@ -96,6 +96,8 @@ class HasMany extends Field
      */
     protected $distinctFields = [];
 
+    protected $tabLabelModelAttribute = '';
+
     /**
      * Create a new HasMany field instance.
      *
@@ -425,6 +427,13 @@ class HasMany extends Field
         return $this->mode('table');
     }
 
+    public function setTabLabelModelAttribute(string $attribute)
+    {
+        $this->tabLabelModelAttribute = $attribute;
+
+        return $this;
+    }
+
     /**
      * Build Nested form for related data.
      *
@@ -486,7 +495,13 @@ class HasMany extends Field
             }
 
             foreach ($this->value as $data) {
-                $key = Arr::get($data, $relation->getRelated()->getKeyName());
+                $keyAttribute = $relation->getRelated()->getKeyName();
+
+                if (!empty($this->tabLabelModelAttribute) && Arr::exists($data, $this->tabLabelModelAttribute)) {
+                    $keyAttribute = $this->tabLabelModelAttribute;
+                }
+
+                $key = Arr::get($data, $keyAttribute);
 
                 $model = $relation->getRelated()->replicate()->forceFill($data);
 
