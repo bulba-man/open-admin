@@ -14,12 +14,10 @@ class CascadeGroup extends Field
     /**
      * @var string
      */
-    protected $hide = 'hide';
+    protected $hide = 'd-none';
 
     /**
      * CascadeGroup constructor.
-     *
-     * @param array $dependency
      */
     public function __construct(array $dependency)
     {
@@ -27,8 +25,6 @@ class CascadeGroup extends Field
     }
 
     /**
-     * @param Field $field
-     *
      * @return bool
      */
     public function dependsOn(Field $field)
@@ -57,8 +53,10 @@ class CascadeGroup extends Field
      */
     public function render()
     {
+        $class = e($this->dependency['class']);
+
         return <<<HTML
-<div class="cascade-group {$this->dependency['class']} {$this->hide}">
+<div class="cascade-group {$class} {$this->hide}">
 HTML;
     }
 
@@ -67,6 +65,6 @@ HTML;
      */
     public function end()
     {
-        $this->form->html('</div>')->plain();
+        $this->getCascadeContainer()->html('</div>')->plain();
     }
 }
