@@ -108,6 +108,8 @@ Important contracts:
 - Client validation uses `.needs-validation` and `.was-validated`.
 - Tabs are reactivated from URL hash and errors mark their tabs.
 - Cascade-hidden fields are disabled on submit through `disable_cascaded_forms()`.
+- Cascade visibility is runtime-driven from `data-cascade-*` attributes; avoid backend-generated cascade scripts.
+- `KeyValue` and `ListField` add/remove, Enter/Delete, and multiline paste behavior is delegated in `open-admin-form.js` using `data-key-value-*` and `data-list-field-*` markers.
 - `admin.form.resettable()` initializes `.reset-field-to-default`.
 
 When adding form widgets, ensure they reinitialize after `admin.pages.init()`.
@@ -174,6 +176,7 @@ Common view areas:
 - Components: `resources/views/components`.
 
 When changing a field or grid feature, update all corresponding normal view, action view, JS, SCSS, and translations.
+For repeatable form fields, keep button content in `resources/views/form/_add_delete_button.blade.php` and behavior in `open-admin-form.js`; avoid duplicating text/icon conditionals and per-field inline scripts in individual Blade templates.
 
 ## Translations
 
