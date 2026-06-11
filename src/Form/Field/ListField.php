@@ -5,10 +5,12 @@ namespace OpenAdmin\Admin\Form\Field;
 use Illuminate\Support\Arr;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Traits\HasAddDeleteButtons;
 use OpenAdmin\Admin\Form\Field\Traits\Sortable;
 
 class ListField extends Field
 {
+    use HasAddDeleteButtons;
     use Sortable;
 
     /**

@@ -21,11 +21,7 @@
                 <div class="form-group form-delete-group">
                     <label class="{{$viewClass['label']}} form-label"></label>
                     <div class="{{$viewClass['field']}}">
-                        @if($options['deleteButShowText'])
-                        <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
-                        @else
-                        <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i></div>
-                        @endif
+                        <div class="remove btn btn-danger btn-sm pull-right">@include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => trans('admin.remove'), 'defaultIcon' => 'icon-trash'])</div>
                     </div>
                 </div>
                 @endif
@@ -45,11 +41,7 @@
             <div class="form-group form-delete-group">
                 <label class="{{$viewClass['label']}} form-label"></label>
                 <div class="{{$viewClass['field']}}">
-                    @if($options['deleteButShowText'])
-                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i>&nbsp;{{ trans('admin.remove') }}</div>
-                    @else
-                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i></div>
-                    @endif
+                    <div class="remove btn btn-danger btn-sm pull-right">@include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => trans('admin.remove'), 'defaultIcon' => 'icon-trash'])</div>
                 </div>
             </div>
             <hr class="form-border">
@@ -61,11 +53,7 @@
     <div class="has-many-footer form-group">
         <label class="{{$viewClass['label']}} form-label"></label>
         <div class="{{$viewClass['field']}}">
-            @if($options['addButShowText'])
-            <div class="add btn btn-success btn-sm"><i class="icon-save"></i>&nbsp;{{ trans('admin.new') }}</div>
-            @else
-            <div class="add btn btn-success btn-sm"><i class="icon-save"></i></div>
-            @endif
+            <div class="add btn btn-success btn-sm">@include('admin::form._add_delete_button', ['type' => 'add', 'defaultText' => trans('admin.new'), 'defaultIcon' => 'icon-save'])</div>
         </div>
     </div>
     @endif

@@ -14,7 +14,7 @@
             </li>
         @endforeach
         <li class="nav-item add-tab">
-            <button type="button" class="btn btn-light btn-sm add"><i class="icon-plus-circle" style="font-size: large;"></i></button>
+            <button type="button" class="btn btn-light btn-sm add">@include('admin::form._add_delete_button', ['type' => 'add', 'defaultText' => $options['addButtonText'] ?? null, 'defaultIcon' => 'icon-plus-circle', 'iconStyle' => 'font-size: large;'])</button>
         </li>
 
     </ul>
@@ -31,11 +31,7 @@
                 <div class="form-group form-delete-group">
                     <label class="{{$viewClass['label']}} form-label"></label>
                     <div class="{{$viewClass['field']}}">
-                        @if($options['deleteButShowText'])
-                        <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
-                        @else
-                        <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i></div>
-                        @endif
+                        <div class="remove btn btn-danger btn-sm pull-right">@include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => trans('admin.remove'), 'defaultIcon' => 'icon-trash'])</div>
                     </div>
                 </div>
                 @endif
@@ -57,11 +53,7 @@
             <div class="form-group form-delete-group">
                 <label class="{{$viewClass['label']}} form-label"></label>
                 <div class="{{$viewClass['field']}}">
-                    @if($options['deleteButShowText'])
-                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
-                    @else
-                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i></div>
-                    @endif
+                    <div class="remove btn btn-danger btn-sm pull-right">@include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => trans('admin.remove'), 'defaultIcon' => 'icon-trash'])</div>
                 </div>
             </div>
             @endif

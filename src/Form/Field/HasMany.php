@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
 use OpenAdmin\Admin\Form\Field;
+use OpenAdmin\Admin\Form\Field\Traits\HasAddDeleteButtons;
 use OpenAdmin\Admin\Form\Field\Traits\Sortable;
 use OpenAdmin\Admin\Form\NestedForm;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
@@ -20,6 +21,7 @@ use OpenAdmin\Admin\Widgets\Form as WidgetForm;
  */
 class HasMany extends Field
 {
+    use HasAddDeleteButtons;
     use Sortable;
 
     /**
@@ -82,7 +84,9 @@ class HasMany extends Field
         'allowDelete' => true,
         'sortable' => false,
         'deleteButShowText' => true,
+        'deleteButShowIcon' => true,
         'addButShowText' => true,
+        'addButShowIcon' => true,
     ];
 
     /**
@@ -709,30 +713,6 @@ EOT;
     public function disableDelete()
     {
         $this->options['allowDelete'] = false;
-
-        return $this;
-    }
-
-    /**
-     * Hide delete button text. show only icon
-     *
-     * @return $this
-     */
-    public function hideDeleteText()
-    {
-        $this->options['deleteButShowText'] = false;
-
-        return $this;
-    }
-
-    /**
-     * Hide create button text. show only icon
-     *
-     * @return $this
-     */
-    public function hideAddText()
-    {
-        $this->options['addButShowText'] = false;
 
         return $this;
     }
