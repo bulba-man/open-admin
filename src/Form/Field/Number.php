@@ -17,6 +17,7 @@ class Number extends Text
     public function render()
     {
         $this->defaultAttribute('type', 'number');
+        $this->defaultAttribute('inputmode', 'numeric');
         $this->append("<i class='icon-plus plus'></i>");
         $this->prepend("<i class='icon-minus minus'></i>");
         $this->default($this->default);

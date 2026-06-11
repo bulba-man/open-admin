@@ -17,6 +17,28 @@ class KeyValue extends Field
 
     protected $useRandomSelector = false;
 
+    protected $labels = [
+        'keys' => 'Key',
+        'values' => 'Value',
+    ];
+
+    public function __construct($column, $arguments = [])
+    {
+        if (isset($arguments[1])) {
+            $this->labels['keys'] = $arguments[1];
+            unset($arguments[1]);
+            $arguments = array_values($arguments);
+        }
+
+        if (isset($arguments[1])) {
+            $this->labels['values'] = $arguments[1];
+            unset($arguments[1]);
+            $arguments = array_values($arguments);
+        }
+
+        parent::__construct($column, $arguments);
+    }
+
     /**
      * Fill data to the field.
      *
@@ -114,6 +136,8 @@ JS;
         if ($this->useRandomSelector) {
             $this->setId(uniqid($this->getId()));
         }
+
+        $this->addVariables(['labels' => $this->labels]);
 
         $this->addSortable('.kv-', '-table');
         view()->share('options', $this->options);
