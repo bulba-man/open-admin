@@ -54,7 +54,7 @@
                     <td class="form-group">
                         <div>
                             <div class="{{$id}}-remove btn btn-danger btn-sm pull-right" data-key-value-remove>
-                                <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
+                                @include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => __('admin.remove'), 'defaultIcon' => 'icon-trash'])
                             </div>
                         </div>
                     </td>
@@ -64,7 +64,7 @@
 
         </table>
         <div class="{{ $id }}-add btn btn-success btn-sm pull-right" data-key-value-add>
-            <i class="icon-plus"></i>&nbsp;{{ __('admin.new') }}
+            @include('admin::form._add_delete_button', ['type' => 'add', 'defaultText' => __('admin.new'), 'defaultIcon' => 'icon-plus'])
         </div>
 
     </div>
@@ -91,7 +91,7 @@
             <td class="form-group">
                 <div>
                     <div class="{{$id}}-remove btn btn-danger btn-sm pull-right" data-key-value-remove>
-                        <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
+                        @include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => __('admin.remove'), 'defaultIcon' => 'icon-trash'])
                     </div>
                 </div>
             </td>

@@ -30,7 +30,7 @@
 
                     <td style="width: 75px;">
                         <div class="{{$class}}-remove btn btn-danger btn-sm pull-right" data-list-field-remove>
-                            <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
+                            @include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => __('admin.remove'), 'defaultIcon' => 'icon-trash'])
                         </div>
                     </td>
                 </tr>
@@ -38,7 +38,7 @@
             </tbody>
         </table>
         <div class="{{ $class }}-add btn btn-success btn-sm pull-right" data-list-field-add>
-            <i class="icon-plus"></i>&nbsp;{{ __('admin.new') }}
+            @include('admin::form._add_delete_button', ['type' => 'add', 'defaultText' => __('admin.new'), 'defaultIcon' => 'icon-plus'])
         </div>
 
         <template class="{{$class}}-tpl" data-list-field-template>
@@ -56,7 +56,7 @@
 
                 <td style="width: 75px;">
                     <div class="{{$class}}-remove btn btn-danger btn-sm pull-right" data-list-field-remove>
-                        <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
+                        @include('admin::form._add_delete_button', ['type' => 'delete', 'defaultText' => __('admin.remove'), 'defaultIcon' => 'icon-trash'])
                     </div>
                 </td>
             </tr>

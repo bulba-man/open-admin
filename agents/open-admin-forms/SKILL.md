@@ -15,6 +15,7 @@ description: Form and field internals for this OpenAdmin fork. Use when creating
 - Nested forms: `src/Form/NestedForm.php`.
 - Field classes: `src/Form/Field`.
 - Form views: `resources/views/form`.
+- Shared add/delete button rendering: `resources/views/form/_add_delete_button.blade.php`.
 - Form runtime JS: `resources/assets/open-admin/js/open-admin-form.js`.
 - Resettable runtime JS: `resources/assets/open-admin/js/open-admin-resettable.js`.
 
@@ -108,6 +109,8 @@ When adding option-capable fields, keep this interface support consistent.
 - `Columns` collects fields added inside its `add($width, Closure $content)` callback, renders them in Bootstrap columns, then hides the collected fields from normal rendering.
 - `KeyValue` supports custom key/value labels through constructor arguments and `useRandomSelector()` for unique DOM selectors.
 - `ListField` supports Enter to focus/add rows, Delete to remove empty rows, and multiline paste to create rows.
+- `KeyValue`, `ListField`, `HasMany`, and `Table` use `Field\Traits\HasAddDeleteButtons` for add/delete button text and icons. Methods include `addButtonText()`, `deleteButtonText()`, `removeButtonText()`, `addButtonIcon()`, `deleteButtonIcon()`, `removeButtonIcon()`, `hideAddText()`, `hideDeleteText()`, `hideRemoveText()`, `hideAddIcon()`, `hideDeleteIcon()`, and `hideRemoveIcon()`.
+- `KeyValue` and `ListField` add/delete behavior is handled by delegated runtime code in `open-admin-form.js`; do not reintroduce per-field backend-generated add/remove scripts for these widgets.
 - `SwitchField` uses values `1` and `0` by default, supports `values($on, $off)`, and uses cascade behavior.
 - `Number` uses `inputmode="numeric"` and the vendored `fields/number-input.js`.
 - `RadioList` extends `Radio` and renders via `resources/views/form/radiolist.blade.php`.
@@ -134,7 +137,9 @@ Cascade logic lives in `src/Form/Field/Traits/CanCascadeFields.php`.
 
 - Operators include `=`, `>`, `<`, `>=`, `<=`, `!=`, `in`, `notIn`, `has`, `oneIn`, and `oneNotIn`.
 - Field values are string-normalized for comparison.
-- Cascade group class names derive from the field element class.
+- Cascade group class names are stable hashed `cascade-group-*` classes.
+- Backend cascade code should emit declarative `data-cascade-*` attributes on source fields, not per-group inline JavaScript.
+- `Form`, `Widgets\Form`, `EmbeddedForm`, and `NestedForm` act as cascade containers so groups render inside the same nested context as the source field.
 - Supported front-end source field types are switch, radio variants, select variants, belongsTo variants, multiple select, and checkbox variants.
 
 When fixing cascade selectors, verify both PHP class generation and JavaScript selectors.
@@ -145,8 +150,10 @@ When fixing cascade selectors, verify both PHP class generation and JavaScript s
 
 - Dot-notated inner relations are supported for building related forms and key names.
 - Enter key is blocked inside hasMany inputs to prevent accidental submit.
-- `hideDeleteText()` and `hideAddText()` hide button text.
+- Add/delete button content is configurable through `HasAddDeleteButtons`; the legacy `hideDeleteText()` and `hideAddText()` methods remain available.
 - Default, tab, and table modes share much of the same add/remove script.
+- HasMany add/remove scripts must be scoped to each `#has-many-*` container and guarded against duplicate binding, because the same relation field can appear inside nested or repeated form contexts.
+- After adding a new nested row, reinitialize runtime-driven field behavior such as cascade and JSON/list widgets.
 - Removed rows are hidden and marked with `_remove_ = 1`.
 
 `NestedForm` has resettable support and formats resettable relation names with `[value]`.
@@ -159,6 +166,7 @@ Many field changes require matching Blade variables.
 - `help-block.blade.php` handles text, tooltip, and popover modes.
 - `select.blade.php` uses `emptyOption`.
 - `columns.blade.php` calls each collected field render manually.
+- `_add_delete_button.blade.php` renders configurable add/delete text and icons for repeatable fields.
 - Keep `resources/views/actions/form` in mind for modal action forms; these are not always the same as normal form views.
 
 ## Safe Change Checklist
