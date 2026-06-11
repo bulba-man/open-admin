@@ -96,8 +96,6 @@ class HasMany extends Field
      */
     protected $distinctFields = [];
 
-    protected $tabLabelModelAttribute = '';
-
     /**
      * Create a new HasMany field instance.
      *
@@ -429,7 +427,7 @@ class HasMany extends Field
 
     public function setTabLabelModelAttribute(string $attribute)
     {
-        $this->tabLabelModelAttribute = $attribute;
+        $this->options['attribute_for_tab_label'] = $attribute;
 
         return $this;
     }
@@ -495,13 +493,7 @@ class HasMany extends Field
             }
 
             foreach ($this->value as $data) {
-                $keyAttribute = $relation->getRelated()->getKeyName();
-
-                if (!empty($this->tabLabelModelAttribute) && Arr::exists($data, $this->tabLabelModelAttribute)) {
-                    $keyAttribute = $this->tabLabelModelAttribute;
-                }
-
-                $key = Arr::get($data, $keyAttribute);
+                $key = Arr::get($data, $relation->getRelated()->getKeyName());
 
                 $model = $relation->getRelated()->replicate()->forceFill($data);
 
