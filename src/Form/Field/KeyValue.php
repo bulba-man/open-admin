@@ -42,8 +42,7 @@ class KeyValue extends Field
     /**
      * Fill data to the field.
      *
-     * @param array $data
-     *
+     * @param  array  $data
      * @return void
      */
     public function fill($data)
@@ -71,17 +70,17 @@ class KeyValue extends Field
             return $this->validator->call($this, $input);
         }
 
-        if (!is_string($this->column)) {
+        if (! is_string($this->column)) {
             return false;
         }
 
         $rules = $attributes = [];
 
-        if (!$fieldRules = $this->getRules()) {
+        if (! $fieldRules = $this->getRules()) {
             return false;
         }
 
-        if (!Arr::has($input, $this->column)) {
+        if (! Arr::has($input, $this->column)) {
             return false;
         }
 
@@ -95,21 +94,7 @@ class KeyValue extends Field
 
     protected function setupScript()
     {
-        $this->script = <<<JS
-
-document.querySelector('.{$this->getId()}-add').addEventListener('click', function () {
-    var tpl = document.querySelector('template.{$this->getId()}-tpl').innerHTML;
-    var clone = htmlToElement(tpl);
-    document.querySelector('tbody.kv-{$this->getId()}-table').appendChild(clone);
-});
-
-document.querySelector('tbody.kv-{$this->getId()}-table').addEventListener('click', function (event) {
-    if (event.target.classList.contains('{$this->getId()}-remove')){
-        event.target.closest('tr').remove();
-    }
-});
-
-JS;
+        $this->script = '';
     }
 
     public function prepare($value)

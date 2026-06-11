@@ -2,9 +2,10 @@
 @php($listErrorKey = "$column")
 @include("admin::form._header")
 
+        <div data-list-field>
         <table class="table table-with-fields">
 
-            <tbody class="list-{{$class}}-table">
+            <tbody class="list-{{$class}}-table" data-list-field-table>
 
             @foreach(old("{$column}", ($value ?: [])) as $k => $v)
 
@@ -28,7 +29,7 @@
                     </td>
 
                     <td style="width: 75px;">
-                        <div class="{{$class}}-remove btn btn-danger btn-sm pull-right">
+                        <div class="{{$class}}-remove btn btn-danger btn-sm pull-right" data-list-field-remove>
                             <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
                         </div>
                     </td>
@@ -36,11 +37,11 @@
             @endforeach
             </tbody>
         </table>
-        <div class="{{ $class }}-add btn btn-success btn-sm pull-right">
+        <div class="{{ $class }}-add btn btn-success btn-sm pull-right" data-list-field-add>
             <i class="icon-plus"></i>&nbsp;{{ __('admin.new') }}
         </div>
 
-        <template class="{{$class}}-tpl">
+        <template class="{{$class}}-tpl" data-list-field-template>
             <tr>
                 @if(!empty($options['sortable']))
                     <td width="20"><span class="icon-arrows-alt-v btn btn-light handle"></span></td>
@@ -54,11 +55,12 @@
                 </td>
 
                 <td style="width: 75px;">
-                    <div class="{{$class}}-remove btn btn-danger btn-sm pull-right">
+                    <div class="{{$class}}-remove btn btn-danger btn-sm pull-right" data-list-field-remove>
                         <i class="icon-trash">&nbsp;</i>{{ __('admin.remove') }}
                     </div>
                 </td>
             </tr>
         </template>
+        </div>
 
 @include("admin::form._footer")

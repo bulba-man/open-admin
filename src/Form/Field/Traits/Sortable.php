@@ -23,9 +23,17 @@ trait Sortable
         if (isset($this->options['sortable'])) {
             $script = <<<JS
 
-                var sortable = new Sortable(document.querySelector('{$pref}{$this->id}{$suf}'), {
+                document.querySelectorAll('{$pref}{$this->id}{$suf}').forEach((sortableElement) => {
+                    if (sortableElement.getAttribute('data-sortable-initialized') === '1') {
+                        return;
+                    }
+
+                    sortableElement.setAttribute('data-sortable-initialized', '1');
+
+                    new Sortable(sortableElement, {
                     animation:150,
                     handle: ".handle"
+                });
                 });
             JS;
             Admin::script($script);

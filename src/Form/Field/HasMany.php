@@ -526,40 +526,65 @@ class HasMany extends Field
          * {count} is increment number of current sub form count.
          */
         $script = <<<JS
-var index = 0;
-document.querySelector('#has-many-{$this->id} .add').addEventListener("click", function () {
-    index++;
+document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
+    var initializedAttribute = 'data-has-many-{$this->getJSSelector()}-initialized';
 
-    var tpl = document.querySelector('template.{$this->id}-tpl').innerHTML;
-    tpl = tpl.replace(/{$defaultKey}/g, index);
-    var clone = htmlToElement(tpl);
-    addRemoveHasManyListener{$this->getJSSelector()}(clone.querySelector('.remove'));
-
-    clone.querySelectorAll('input').forEach(elem => {
-        addEnterHasManyListener{$this->getJSSelector()}(elem);
-    });
-
-    document.querySelector('.has-many-{$this->id}-forms').appendChild(clone);
-
-    if (typeof(addHasManyTab{$this->getJSSelector()}) == 'function'){
-        addHasManyTab{$this->getJSSelector()}(index);
+    if (hasMany.getAttribute(initializedAttribute) === '1') {
+        return;
     }
 
-    {$templateScript}
-    admin.form.cascade(clone);
-    return false;
+    hasMany.setAttribute(initializedAttribute, '1');
 
-});
+    var index = 0;
+    var add = Array.from(hasMany.querySelectorAll('.add')).find(add => add.closest('#has-many-{$this->id}') === hasMany);
 
-document.querySelectorAll('#has-many-{$this->id} .remove').forEach(remove => {
-    addRemoveHasManyListener{$this->getJSSelector()}(remove);
-});
+    if (add) {
+        add.addEventListener("click", function () {
+            index++;
 
-document.querySelectorAll('#has-many-{$this->id} input').forEach(elem => {
-    addEnterHasManyListener{$this->getJSSelector()}(elem);
+            var tpl = hasMany.querySelector('template.{$this->id}-tpl').innerHTML;
+            tpl = tpl.replace(/{$defaultKey}/g, index);
+            var clone = htmlToElement(tpl);
+            addRemoveHasManyListener{$this->getJSSelector()}(clone.querySelector('.remove'), hasMany);
+
+            clone.querySelectorAll('input').forEach(elem => {
+                addEnterHasManyListener{$this->getJSSelector()}(elem);
+            });
+
+            hasMany.querySelector('.has-many-{$this->id}-forms').appendChild(clone);
+
+            if (typeof(addHasManyTab{$this->getJSSelector()}) == 'function'){
+                addHasManyTab{$this->getJSSelector()}(hasMany, index);
+            }
+
+            {$templateScript}
+            admin.form.cascade(clone);
+            admin.form.jsonFields();
+            return false;
+
+        });
+    }
+
+    hasMany.querySelectorAll('.remove').forEach(remove => {
+        if (remove.closest('#has-many-{$this->id}') === hasMany) {
+            addRemoveHasManyListener{$this->getJSSelector()}(remove, hasMany);
+        }
+    });
+
+    hasMany.querySelectorAll('input').forEach(elem => {
+        if (elem.closest('#has-many-{$this->id}') === hasMany) {
+            addEnterHasManyListener{$this->getJSSelector()}(elem);
+        }
+    });
 });
 
 function addEnterHasManyListener{$this->getJSSelector()}(el){
+    if (!el || el.getAttribute('data-has-many-enter-{$this->getJSSelector()}') === '1') {
+        return;
+    }
+
+    el.setAttribute('data-has-many-enter-{$this->getJSSelector()}', '1');
+
     el.addEventListener("keydown", function (event) {
         if (event.keyCode == 13) {
             event.preventDefault();
@@ -568,15 +593,30 @@ function addEnterHasManyListener{$this->getJSSelector()}(el){
     });
 }
 
-function addRemoveHasManyListener{$this->getJSSelector()}(remove){
+function addRemoveHasManyListener{$this->getJSSelector()}(remove, hasMany){
+    if (!remove || remove.getAttribute('data-has-many-remove-{$this->getJSSelector()}') === '1') {
+        return;
+    }
+
+    remove.setAttribute('data-has-many-remove-{$this->getJSSelector()}', '1');
+
     remove.addEventListener("click", function () {
         let form = this.closest('.has-many-{$this->id}-form');
+
+        if (!form) {
+            return false;
+        }
+
         if (typeof(removeHasManyTab{$this->getJSSelector()}) == 'function'){
-            removeHasManyTab{$this->getJSSelector()}();
+            removeHasManyTab{$this->getJSSelector()}(hasMany);
         }
         form.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
-        hide(this.closest('.has-many-{$this->id}-form'));
-        this.closest('.has-many-{$this->id}-form').querySelector('.$removeClass').value = 1;
+        hide(form);
+
+        let removeFlag = form.querySelector('.$removeClass');
+        if (removeFlag) {
+            removeFlag.value = 1;
+        }
 
         return false;
     });
@@ -601,20 +641,23 @@ JS;
         $this->setupScriptForDefaultView($templateScript);
 
         $script = <<<EOT
-        function removeHasManyTab{$this->getJSSelector()}(){
-            document.querySelector('#has-many-{$this->id} .nav-link.active').parentNode.remove();
-            let trigger = document.querySelector('#has-many-{$this->id} .nav-link:first-child');
-            console.log(trigger);
+        function removeHasManyTab{$this->getJSSelector()}(hasMany){
+            let active = hasMany.querySelector('.nav-link.active');
+            if (active) {
+                active.parentNode.remove();
+            }
+
+            let trigger = hasMany.querySelector('.nav-link:first-child');
             if (trigger){
                 bootstrap.Tab.getOrCreateInstance(trigger).show();
             }
         }
-        function addHasManyTab{$this->getJSSelector()}(index){
-            let tpl = document.querySelector('template.{$this->id}-tab-tpl').innerHTML;
+        function addHasManyTab{$this->getJSSelector()}(hasMany, index){
+            let tpl = hasMany.querySelector('template.{$this->id}-tab-tpl').innerHTML;
             tpl = tpl.replace(/{$defaultKey}/g, index);
             let clone = htmlToElement(tpl);
-            let addTab = document.querySelector('.has-many-{$this->id} .add-tab')
-            document.querySelector('.has-many-{$this->id} > .nav').insertBefore(clone,addTab);
+            let addTab = hasMany.querySelector('.add-tab')
+            hasMany.querySelector('.nav').insertBefore(clone,addTab);
             bootstrap.Tab.getOrCreateInstance(clone.querySelector("a")).show();
         }
 

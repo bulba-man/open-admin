@@ -7,6 +7,7 @@ admin.form = {
     tabs_ref: false,
     beforeSaveCallbacks: [],
     cascadeEventsBound: false,
+    jsonFieldEventsBound: false,
 
     init: function () {
         this.addAjaxSubmit();
@@ -14,6 +15,7 @@ admin.form = {
         this.tabs();
         this.initValidation();
         this.cascade();
+        this.jsonFields();
         this.resettable();
     },
 
@@ -360,6 +362,208 @@ admin.form = {
             default:
                 return false;
         }
+    },
+
+    jsonFields: function () {
+        this.bindJsonFieldEvents();
+    },
+
+    bindJsonFieldEvents: function () {
+        if (this.jsonFieldEventsBound) {
+            return;
+        }
+
+        this.jsonFieldEventsBound = true;
+
+        document.addEventListener('click', function (event) {
+            if (!event.target || !event.target.closest) {
+                return;
+            }
+
+            let keyValueAdd = event.target.closest('[data-key-value-add]');
+            if (keyValueAdd) {
+                event.preventDefault();
+                admin.form.addKeyValueRow(keyValueAdd);
+                return;
+            }
+
+            let keyValueRemove = event.target.closest('[data-key-value-remove]');
+            if (keyValueRemove) {
+                event.preventDefault();
+                admin.form.removeJsonFieldRow(keyValueRemove);
+                return;
+            }
+
+            let listAdd = event.target.closest('[data-list-field-add]');
+            if (listAdd) {
+                event.preventDefault();
+                admin.form.addListFieldRow(listAdd.closest('[data-list-field]'));
+                return;
+            }
+
+            let listRemove = event.target.closest('[data-list-field-remove]');
+            if (listRemove) {
+                event.preventDefault();
+                admin.form.removeJsonFieldRow(listRemove);
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (!event.target.matches || !event.target.matches('[data-list-field] input, [data-list-field] textarea')) {
+                return;
+            }
+
+            admin.form.handleListFieldKeydown(event);
+        });
+
+        document.addEventListener('paste', function (event) {
+            if (!event.target.matches || !event.target.matches('[data-list-field] input, [data-list-field] textarea')) {
+                return;
+            }
+
+            admin.form.handleListFieldPaste(event);
+        });
+    },
+
+    addKeyValueRow: function (trigger) {
+        let field = trigger.closest('[data-key-value-field]');
+
+        if (!field) {
+            return null;
+        }
+
+        let row = this.addJsonFieldRow(field, '[data-key-value-template]', '[data-key-value-table]');
+
+        if (row) {
+            this.focusJsonFieldInput(row);
+        }
+
+        return row;
+    },
+
+    addListFieldRow: function (field) {
+        if (!field) {
+            return null;
+        }
+
+        let row = this.addJsonFieldRow(field, '[data-list-field-template]', '[data-list-field-table]');
+        let input = row ? this.focusJsonFieldInput(row) : null;
+
+        return input;
+    },
+
+    addJsonFieldRow: function (field, templateSelector, tableSelector) {
+        let wrapper = field.parentElement || field;
+        let template = field.querySelector(templateSelector) || wrapper.querySelector(templateSelector);
+        let table = field.querySelector(tableSelector) || wrapper.querySelector(tableSelector);
+
+        if (!template || !table) {
+            return null;
+        }
+
+        let fragment;
+        let row;
+
+        if (template.content) {
+            fragment = template.content.cloneNode(true);
+            row = fragment.firstElementChild;
+        } else {
+            row = htmlToElement(template.innerHTML);
+            fragment = row;
+        }
+
+        table.appendChild(fragment);
+
+        return row;
+    },
+
+    removeJsonFieldRow: function (trigger) {
+        let row = trigger.closest('tr');
+
+        if (row) {
+            row.remove();
+        }
+    },
+
+    focusJsonFieldInput: function (row) {
+        let input = row.querySelector('input, textarea');
+
+        if (!input) {
+            return null;
+        }
+
+        input.focus();
+
+        if (typeof input.setSelectionRange === 'function') {
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+
+        return input;
+    },
+
+    handleListFieldKeydown: function (event) {
+        let field = event.target.closest('[data-list-field]');
+        let row = event.target.closest('tr');
+
+        if (!field || !row) {
+            return;
+        }
+
+        if (event.key === 'Enter' || event.keyCode === 13) {
+            event.preventDefault();
+
+            let next = row.nextElementSibling;
+            if (next && next.nodeName === 'TR') {
+                this.focusJsonFieldInput(next);
+                return false;
+            }
+
+            this.addListFieldRow(field);
+
+            return false;
+        }
+
+        if ((event.key === 'Delete' || event.keyCode === 46) && !event.target.value.length) {
+            event.preventDefault();
+
+            let prev = row.previousElementSibling;
+            row.remove();
+
+            if (prev && prev.nodeName === 'TR') {
+                this.focusJsonFieldInput(prev);
+            }
+
+            return false;
+        }
+    },
+
+    handleListFieldPaste: function (event) {
+        let field = event.target.closest('[data-list-field]');
+        let clipboardData = event.clipboardData || window.clipboardData;
+
+        if (!field || !clipboardData) {
+            return;
+        }
+
+        let pastedData = clipboardData.getData('Text');
+        let rows = pastedData.split(/\r\n|\r|\n/);
+
+        if (!rows.length) {
+            return;
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        event.target.value = rows[0];
+
+        rows.slice(1).forEach((value) => {
+            let input = this.addListFieldRow(field);
+
+            if (input) {
+                input.value = value;
+            }
+        });
     },
 
     initValidation: function () {
