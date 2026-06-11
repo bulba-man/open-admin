@@ -34,7 +34,7 @@ class Html extends Field
     {
         $this->html = $html;
 
-        $this->label = Arr::get($arguments, 0);
+        $this->label = Arr::get($arguments, 0, '');
     }
 
     /**
