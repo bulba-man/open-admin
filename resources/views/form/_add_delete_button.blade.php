@@ -12,4 +12,16 @@
     $hasText = $text !== null && $text !== '';
     $hasIcon = $icon !== null && $icon !== '';
 @endphp
-@if($showIcon && $hasIcon)<i class="{{ $icon }}" @isset($iconStyle) style="{{ $iconStyle }}" @endisset></i>@endif@if($showIcon && $hasIcon && $showText && $hasText)&nbsp;@endif@if($showText && $hasText){{ $text }}@endif
+@if($showIcon && $hasIcon)
+    @if(isset($iconStyle) && $iconStyle !== '')
+        <i class="{{ $icon }}" style="{{ $iconStyle }}"></i>
+    @else
+        <i class="{{ $icon }}"></i>
+    @endif
+@endif
+@if($showIcon && $hasIcon && $showText && $hasText)
+    &nbsp;
+@endif
+@if($showText && $hasText)
+    {{ $text }}
+@endif
