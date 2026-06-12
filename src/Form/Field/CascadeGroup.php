@@ -53,6 +53,10 @@ class CascadeGroup extends Field
      */
     public function render()
     {
+        if (! $this->shouldRender()) {
+            return '';
+        }
+
         $class = e($this->dependency['class']);
 
         return <<<HTML
