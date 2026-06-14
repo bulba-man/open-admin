@@ -36,6 +36,8 @@ class Select extends Field
 
     public $additional_script = '';
 
+    protected $fieldWidth = '100%';
+
     /**
      * @var bool
      */
@@ -378,11 +380,20 @@ JS;
         ]);
     }
 
+    public function width($width): Field
+    {
+        $this->fieldWidth = $width;
+
+        return $this;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function render()
     {
+        parent::width($this->fieldWidth);
+
         if ($this->options instanceof \Closure) {
             if ($this->form) {
                 $this->options = $this->options->bindTo($this->form->model());
