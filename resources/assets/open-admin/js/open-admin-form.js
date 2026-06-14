@@ -593,6 +593,47 @@ admin.form = {
         });
     },
 
+    choices: function (selector, options, objectName, container) {
+        if (typeof Choices !== 'function') {
+            return null;
+        }
+
+        container = container || document;
+
+        let fields = [];
+
+        if (container.matches && container.matches(selector)) {
+            fields.push(container);
+        }
+
+        container.querySelectorAll(selector).forEach((field) => {
+            fields.push(field);
+        });
+
+        let choice = null;
+
+        fields.forEach((field) => {
+            if (field.dataset.choicesInitialized === '1') {
+                choice = field.choicesInstance || choice;
+                return;
+            }
+
+            field.dataset.choicesInitialized = '1';
+            choice = new Choices(field, options);
+            field.choicesInstance = choice;
+        });
+
+        if (objectName) {
+            if (!window.choices_vars) {
+                window.choices_vars = [];
+            }
+
+            window.choices_vars[objectName] = choice;
+        }
+
+        return choice;
+    },
+
     initValidation: function () {
         var forms = document.querySelectorAll('.needs-validation');
         forms.forEach(function (form) {
