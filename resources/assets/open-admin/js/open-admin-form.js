@@ -566,6 +566,33 @@ admin.form = {
         });
     },
 
+    inputmask: function (selector, options, container) {
+        if (typeof Inputmask !== 'function') {
+            return;
+        }
+
+        container = container || document;
+
+        let fields = [];
+
+        if (container.matches && container.matches(selector)) {
+            fields.push(container);
+        }
+
+        container.querySelectorAll(selector).forEach((field) => {
+            fields.push(field);
+        });
+
+        fields.forEach((field) => {
+            if (field.dataset.inputmaskInitialized === '1') {
+                return;
+            }
+
+            field.dataset.inputmaskInitialized = '1';
+            Inputmask(options).mask(field);
+        });
+    },
+
     initValidation: function () {
         var forms = document.querySelectorAll('.needs-validation');
         forms.forEach(function (form) {
