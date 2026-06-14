@@ -9,7 +9,7 @@
         @foreach($forms as $pk => $form)
             <li id="tab_{{ $relationName . '_' . $pk }}" class="nav-item">
                 <a class="nav-link @if ($form == reset($forms)) active @endif " href="#{{ $relationName . '_' . $pk }}" data-bs-toggle="tab">
-                    {{ $pk }} <i class="icon-exclamation-circle text-red hide"></i>
+                    {{ ($options['attribute_for_tab_label'] && $label = $form->model()->getAttribute($options['attribute_for_tab_label'])) ? $label : $pk }} <i class="icon-exclamation-circle text-red hide"></i>
                 </a>
             </li>
         @endforeach

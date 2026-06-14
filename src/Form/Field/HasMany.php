@@ -2,6 +2,7 @@
 
 namespace OpenAdmin\Admin\Form\Field;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\Relations\HasMany as Relation;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -425,6 +426,13 @@ class HasMany extends Field
         return $this->mode('table');
     }
 
+    public function setTabLabelModelAttribute(string $attribute)
+    {
+        $this->options['attribute_for_tab_label'] = $attribute;
+
+        return $this;
+    }
+
     /**
      * Build Nested form for related data.
      *
@@ -482,11 +490,19 @@ class HasMany extends Field
             }
         } else {
             if (empty($this->value)) {
+                $this->value = $this->getDefault();
+            }
+
+            if (empty($this->value)) {
                 return [];
             }
 
-            foreach ($this->value as $data) {
-                $key = Arr::get($data, $relation->getRelated()->getKeyName());
+            foreach ($this->value as $index => $data) {
+                if ($data instanceof Arrayable) {
+                    $data = $data->toArray();
+                }
+
+                $key = Arr::get($data, $relation->getRelated()->getKeyName(), $index);
 
                 $model = $relation->getRelated()->replicate()->forceFill($data);
 

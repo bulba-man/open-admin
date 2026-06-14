@@ -36,6 +36,8 @@ class Select extends Field
 
     public $additional_script = '';
 
+    protected $fieldWidth = '100%';
+
     /**
      * @var bool
      */
@@ -378,11 +380,20 @@ JS;
         ]);
     }
 
+    public function width($width): Field
+    {
+        $this->fieldWidth = $width;
+
+        return $this;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function render()
     {
+        parent::width($this->fieldWidth);
+
         if ($this->options instanceof \Closure) {
             if ($this->form) {
                 $this->options = $this->options->bindTo($this->form->model());
@@ -416,6 +427,8 @@ JS;
             $this->script .= 'var '.$this->choicesObjName()." = new Choices('{$this->getElementClassSelector()}',{$configs});";
             $this->script .= "\r\nif(!window.choices_vars) {window.choices_vars = []}\r\nwindow.choices_vars['{$this->choicesObjName()}'] = {$this->choicesObjName()};\r\n";
             $this->script .= $this->additional_script;
+
+            $this->attribute('data-choices-obj-name', $this->choicesObjName());
         }
 
         $this->addVariables([

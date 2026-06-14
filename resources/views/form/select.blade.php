@@ -4,7 +4,7 @@
         <input type="hidden" name="{{$name}}" value="{{$value}}" />
         @endif
 
-        <select class="form-select {{$class}}" style="width: 100%;" name="{{$name}}@if (!empty($attributes_obj['readonly']))-disabled @endif" {!! $attributes !!} >
+        <select class="form-select {{$class}}" name="{{$name}}@if (!empty($attributes_obj['readonly']))-disabled @endif" {!! $attributes !!} >
             @if($emptyOption)<option value=""></option>@endif
             @if($groups)
                 @foreach($groups as $group)

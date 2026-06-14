@@ -2,14 +2,16 @@
 
 namespace OpenAdmin\Admin\Form\Field;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\View\View;
 use OpenAdmin\Admin\Form\Field;
 use OpenAdmin\Admin\Form\Field\Traits\HasValuePicker;
 use OpenAdmin\Admin\Form\Field\Traits\PlainInput;
 
 class Text extends Field
 {
-    use PlainInput;
     use HasValuePicker;
+    use PlainInput;
 
     /**
      * @var string
@@ -24,8 +26,7 @@ class Text extends Field
     /**
      * Set custom fa-icon.
      *
-     * @param string $icon
-     *
+     * @param  string  $icon
      * @return $this
      */
     public function icon($icon)
@@ -38,13 +39,13 @@ class Text extends Field
     /**
      * Render this filed.
      *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function render()
     {
         $this->initPlainInput();
 
-        if (!$this->withoutIcon) {
+        if (! $this->withoutIcon) {
             $this->prepend('<i class="'.$this->icon.'"></i>');
         }
         $this->defaultAttribute('type', 'text')
@@ -56,7 +57,7 @@ class Text extends Field
             ->mountPicker()
             ->addVariables([
                 'prepend' => $this->prepend,
-                'append'  => $this->append,
+                'append' => $this->append,
             ]);
 
         return parent::render();
@@ -65,19 +66,14 @@ class Text extends Field
     /**
      * Add inputmask to an elements.
      *
-     * @param array $options
-     *
+     * @param  array  $options
      * @return $this
      */
     public function inputmask($options)
     {
         $options = json_encode_options($options);
 
-        $elName = $this->elementName;
-
-        //$this->script = "$('{$this->getElementClassSelector()}').inputmask($options);";
-        $this->script = "Inputmask({$options}).mask(document.querySelector(\"{$this->getElementClassSelector()}\"));";
-//        $this->script = "Inputmask({$options}).mask(document.querySelector('input[name=\"{$this->elementName}\"]'));";
+       $this->script = "Inputmask({$options}).mask(document.querySelector(\"{$this->getElementClassSelector()}\"));";
 
         return $this;
     }
@@ -85,8 +81,7 @@ class Text extends Field
     /**
      * Add datalist element to Text input.
      *
-     * @param array $entries
-     *
+     * @param  array  $entries
      * @return $this
      */
     public function datalist($entries = [])
