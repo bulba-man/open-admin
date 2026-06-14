@@ -73,7 +73,7 @@ class Text extends Field
     {
         $options = json_encode_options($options);
 
-       $this->script = "Inputmask({$options}).mask(document.querySelector(\"{$this->getElementClassSelector()}\"));";
+        $this->script = "admin.form.inputmask(\"{$this->getElementClassSelector()}\", {$options});";
 
         return $this;
     }
