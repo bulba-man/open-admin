@@ -20,7 +20,7 @@ Treat this repository as a Laravel admin package, not as a normal Laravel applic
 Start with this skill, then load the narrow skill that matches the task:
 
 - Package, compatibility, service provider, commands, tests, style, release: `./open-admin-package/SKILL.md`
-- Forms, fields, validation, save pipeline, resettable fields, nested forms, cascades: `./open-admin-forms/SKILL.md`
+- Forms, detail Show, fields, validation, save pipeline, resettable fields, nested forms, cascades: `./open-admin-forms/SKILL.md`
 - Grids, filters, columns, displayers, row actions, batch actions, restore: `./open-admin-grids-actions/SKILL.md`
 - Blade views, JavaScript runtime, PJAX, assets, SCSS, custom alerts/prompts: `./open-admin-frontend-assets/SKILL.md`
 - Auth, permissions, menu schema, install, migrations, config defaults: `./open-admin-auth-install/SKILL.md`
