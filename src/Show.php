@@ -292,9 +292,9 @@ class Show implements Renderable
     /**
      * Show a divider.
      */
-    public function divider()
+    public function divider(?string $label = null): void
     {
-        $this->fields->push(new Divider());
+        $this->fields->push(new Divider($label));
     }
 
     /**
