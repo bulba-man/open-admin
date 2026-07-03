@@ -20,7 +20,7 @@ trait Sortable
 
     public function addSortable($pref = '', $suf = '')
     {
-        if (isset($this->options['sortable'])) {
+        if (! empty($this->options['sortable'])) {
             $script = <<<JS
 
                 document.querySelectorAll('{$pref}{$this->id}{$suf}').forEach((sortableElement) => {

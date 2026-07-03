@@ -20,6 +20,14 @@ trait HasAddDeleteButtons
         return $this;
     }
 
+    public function editButtonText(string $text): self
+    {
+        $this->options['editButtonText'] = $text;
+        $this->options['editButShowText'] = true;
+
+        return $this;
+    }
+
     public function removeButtonText(string $text): self
     {
         return $this->deleteButtonText($text);
@@ -37,6 +45,14 @@ trait HasAddDeleteButtons
     {
         $this->options['deleteButtonIcon'] = $icon;
         $this->options['deleteButShowIcon'] = filled($icon);
+
+        return $this;
+    }
+
+    public function editButtonIcon(?string $icon): self
+    {
+        $this->options['editButtonIcon'] = $icon;
+        $this->options['editButShowIcon'] = filled($icon);
 
         return $this;
     }
@@ -60,6 +76,13 @@ trait HasAddDeleteButtons
         return $this;
     }
 
+    public function hideEditText(): self
+    {
+        $this->options['editButShowText'] = false;
+
+        return $this;
+    }
+
     public function hideRemoveText(): self
     {
         return $this->hideDeleteText();
@@ -75,6 +98,13 @@ trait HasAddDeleteButtons
     public function hideDeleteIcon(): self
     {
         $this->options['deleteButShowIcon'] = false;
+
+        return $this;
+    }
+
+    public function hideEditIcon(): self
+    {
+        $this->options['editButShowIcon'] = false;
 
         return $this;
     }
