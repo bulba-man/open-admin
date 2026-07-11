@@ -67,6 +67,10 @@ class Table extends HasMany
                 $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)->fill($data);
             }
         } else {
+            if (empty($this->value)) {
+                $this->value = $this->getDefault();
+            }
+
             foreach ($this->value ?? [] as $key => $data) {
                 if (isset($data['pivot'])) {
                     $data = array_merge($data, $data['pivot']);
