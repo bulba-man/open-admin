@@ -428,6 +428,89 @@ body .choices {
         }
     }
 
+    .has-many-modal-table {
+        table {
+            &.vertical-align-top td{
+                vertical-align:top;
+            }
+            &.vertical-align-middle td{
+                vertical-align:middle;
+            }
+            &.vertical-align-bottom td{
+                vertical-align:bottom;
+            }
+        }
+
+        .has-many-modal-table-actions {
+            white-space: nowrap;
+
+            .btn + .btn {
+                margin-left: 0.25rem;
+            }
+        }
+
+        .has-many-modal-table-deleted td {
+            background-color: $gray-100;
+            color: $gray-600;
+            text-decoration: line-through;
+        }
+
+        .has-many-modal-table-error td {
+            background-color: rgba($danger, 0.08);
+        }
+
+        [data-preview-column] {
+            max-width: 18rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .has-many-modal {
+            .modal-header {
+                align-items: center;
+
+                .close {
+                    margin-left: auto;
+                }
+            }
+
+            .modal-body {
+                .form-group {
+                    align-items: flex-start;
+                    margin-left: 0;
+                    margin-right: 0;
+                }
+
+                label.form-label {
+                    flex: 0 0 32%;
+                    max-width: 32%;
+                    width: 32%;
+                    padding-right: 1rem;
+                }
+
+                .form-group > [class*="col-sm-"]:not(.form-label) {
+                    flex: 0 0 68%;
+                    max-width: 68%;
+                    width: 68%;
+                }
+
+                @media (max-width: 575.98px) {
+                    label.form-label,
+                    .form-group > [class*="col-sm-"]:not(.form-label) {
+                        flex: 0 0 100%;
+                        max-width: 100%;
+                        width: 100%;
+                    }
+
+                    label.form-label {
+                        padding-right: 0;
+                        text-align: left;
+                    }
+                }
+            }
+        }
+    }
+
     table td.hidden,
     table th.hidden {
         padding: 0 !important;

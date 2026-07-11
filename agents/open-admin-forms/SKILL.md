@@ -1,6 +1,6 @@
 ---
 name: open-admin-forms
-description: Form and field internals for this OpenAdmin fork. Use when creating, reviewing, or changing Form, Form Builder, Form Field classes, nested forms, hasMany, validation, relation saves, field options, resettable defaults, cascades, modal action forms, form Blade views, or form JavaScript behavior.
+description: Form, detail Show, and field internals for this OpenAdmin fork. Use when creating, reviewing, or changing Form, Show, Form Builder, Form Field classes, Show Field classes, nested forms, hasMany, validation, relation saves, field options, resettable defaults, cascades, modal action forms, form/show Blade views, or form JavaScript behavior.
 ---
 
 # OpenAdmin Forms
@@ -18,6 +18,9 @@ description: Form and field internals for this OpenAdmin fork. Use when creating
 - Shared add/delete button rendering: `resources/views/form/_add_delete_button.blade.php`.
 - Form runtime JS: `resources/assets/open-admin/js/open-admin-form.js`.
 - Resettable runtime JS: `resources/assets/open-admin/js/open-admin-resettable.js`.
+- Detail Show orchestrator: `src/Show.php`.
+- Detail Show fields: `src/Show`.
+- Detail Show views: `resources/views/show`.
 
 ## Save Pipeline
 
@@ -115,6 +118,28 @@ When adding option-capable fields, keep this interface support consistent.
 - `Number` uses `inputmode="numeric"` and the vendored `fields/number-input.js`.
 - `RadioList` extends `Radio` and renders via `resources/views/form/radiolist.blade.php`.
 
+## Detail Show
+
+`Show` has a fork-added column layout API mirroring the form `Columns` field pattern.
+
+- Use `$show->columns($label = '')` to add a `Show\Columns` renderable into the normal show field collection.
+- Add column groups with `->add($width, Closure $content)`.
+- `$width` may be an integer Bootstrap width, `[width, offset]`, or a full CSS class string.
+- Fields declared inside the callback are collected from the parent `Show`, rendered inside `resources/views/show/columns.blade.php`, then hidden from the normal panel flow to avoid duplicate output.
+- `Show\Field` supports `setDisplay(bool $display)` and `shouldRender()` so structural show elements can suppress collected fields consistently.
+- `Show::setWidth()` must still affect nested column fields; structural show elements should propagate width/value operations to collected children.
+
+Example:
+
+```php
+$show->columns('Contact')->add(6, function (Show $show) {
+    $show->field('email');
+    $show->field('phone');
+})->add(6, function (Show $show) {
+    $show->field('address');
+});
+```
+
 ## Resettable Fields
 
 Resettable fields use a two-part input model.
@@ -166,6 +191,7 @@ Many field changes require matching Blade variables.
 - `help-block.blade.php` handles text, tooltip, and popover modes.
 - `select.blade.php` uses `emptyOption`.
 - `columns.blade.php` calls each collected field render manually.
+- `show/columns.blade.php` calls each collected show field render manually and relies on `Show\Columns` to hide collected fields after rendering.
 - `_add_delete_button.blade.php` renders configurable add/delete text and icons for repeatable fields.
 - Keep `resources/views/actions/form` in mind for modal action forms; these are not always the same as normal form views.
 

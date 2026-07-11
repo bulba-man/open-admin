@@ -28,6 +28,7 @@ return [
     'batch_delete'          => 'Batch delete',
     'batch_edit'            => 'Batch edit',
     'save'                  => 'Save',
+    'apply'                 => 'Apply',
     'refresh'               => 'Refresh',
     'order'                 => 'Order',
     'expand'                => 'Expand',

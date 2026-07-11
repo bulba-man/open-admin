@@ -1,10 +1,26 @@
 @php
     $buttonOptions = $options ?? [];
     $buttonType = $type ?? 'add';
-    $textKey = $buttonType === 'delete' ? 'deleteButtonText' : 'addButtonText';
-    $iconKey = $buttonType === 'delete' ? 'deleteButtonIcon' : 'addButtonIcon';
-    $showTextKey = $buttonType === 'delete' ? 'deleteButShowText' : 'addButShowText';
-    $showIconKey = $buttonType === 'delete' ? 'deleteButShowIcon' : 'addButShowIcon';
+    $textKey = match ($buttonType) {
+        'delete' => 'deleteButtonText',
+        'edit' => 'editButtonText',
+        default => 'addButtonText',
+    };
+    $iconKey = match ($buttonType) {
+        'delete' => 'deleteButtonIcon',
+        'edit' => 'editButtonIcon',
+        default => 'addButtonIcon',
+    };
+    $showTextKey = match ($buttonType) {
+        'delete' => 'deleteButShowText',
+        'edit' => 'editButShowText',
+        default => 'addButShowText',
+    };
+    $showIconKey = match ($buttonType) {
+        'delete' => 'deleteButShowIcon',
+        'edit' => 'editButShowIcon',
+        default => 'addButShowIcon',
+    };
     $text = $buttonOptions[$textKey] ?? ($defaultText ?? null);
     $icon = $buttonOptions[$iconKey] ?? ($defaultIcon ?? null);
     $showText = $buttonOptions[$showTextKey] ?? true;

@@ -19,9 +19,9 @@ description: Package-level workflow and conventions for this OpenAdmin fork. Use
 
 Use `composer.json` as the declared compatibility contract, but verify against current code.
 
-- Declared PHP constraint is `~7.3|~8.0`.
-- Declared Laravel framework constraint is `>=7.0`.
-- Current source already contains PHP 8-era syntax in places, including `static` return types and typed properties.
+- Declared PHP constraint is `^8.1`.
+- Declared Laravel framework constraint is `^10.0|^11.0|^12.0`.
+- Current source already contains PHP 8-era syntax in places, including typed properties.
 - Do not add newer syntax or APIs casually. First decide whether the task targets the declared package contract or the current fork runtime.
 - Prefer patterns already present in sibling files over generalized Laravel 12 advice.
 
@@ -64,7 +64,8 @@ This package uses old-style PHPUnit and BrowserKit tests, not `php artisan test`
 - Test command from `composer.json`: `composer test`.
 - Direct command: `vendor/bin/phpunit`.
 - PHPUnit config: `phpunit.xml.dist`.
-- Tests expect a Laravel skeleton at `vendor/laravel/laravel/bootstrap/app.php`.
+- Legacy BrowserKit tests expect a Laravel skeleton at `vendor/laravel/laravel/bootstrap/app.php`.
+- Narrow package-level tests may extend `Orchestra\Testbench\TestCase` directly when they only need package service provider bootstrapping.
 - Tests configure MySQL via `MYSQL_HOST`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`.
 - `tests/TestCase.php` publishes package assets/config, runs `admin:install`, migrates test tables, loads routes, then tears tables down.
 
@@ -81,7 +82,8 @@ If dependencies or the test Laravel skeleton are missing, state that verificatio
 ## Style
 
 - `.styleci.yml` uses the recommended preset and disables `unalign_equals`.
-- There is no Pint configuration in this repository.
+- Laravel Pint is installed as a dev dependency.
+- Run `vendor/bin/pint --dirty --format agent` after editing PHP files.
 - Keep existing PHPDoc-heavy style and legacy-compatible method signatures unless nearby code clearly uses types.
 - Avoid broad dependency changes without approval.
 - Keep generated CSS and source SCSS in sync when changing styles.
