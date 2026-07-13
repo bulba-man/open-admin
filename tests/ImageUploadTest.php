@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use OpenAdmin\Admin\Auth\Database\Administrator;
 use Tests\Models\Image;
@@ -14,13 +15,13 @@ class ImageUploadTest extends TestCase
         $this->be(Administrator::first(), 'admin');
     }
 
-    public function testDisableFilter()
+    public function test_disable_filter()
     {
         $this->visit('admin/images')
             ->dontSeeElement('input[name=id]');
     }
 
-    public function testImageUploadPage()
+    public function test_image_upload_page()
     {
         $this->visit('admin/images/create')
             ->see('Images')
@@ -47,7 +48,7 @@ class ImageUploadTest extends TestCase
             ->press('Submit');
     }
 
-    public function testUploadImage()
+    public function test_upload_image()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
@@ -69,7 +70,7 @@ class ImageUploadTest extends TestCase
         File::cleanDirectory(public_path('uploads/images'));
     }
 
-    public function testRemoveImage()
+    public function test_remove_image()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
@@ -78,7 +79,7 @@ class ImageUploadTest extends TestCase
         $this->assertEquals($this->fileCountInImageDir(), 6);
     }
 
-    public function testUpdateImage()
+    public function test_update_image()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
@@ -118,7 +119,7 @@ class ImageUploadTest extends TestCase
         File::cleanDirectory(public_path('uploads/images'));
     }
 
-    public function testDeleteImages()
+    public function test_delete_images()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
@@ -140,7 +141,7 @@ class ImageUploadTest extends TestCase
             ->seeInElement('td', 'svg');
     }
 
-    public function testBatchDelete()
+    public function test_batch_delete()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
@@ -167,7 +168,7 @@ class ImageUploadTest extends TestCase
         $this->assertEquals($this->fileCountInImageDir(), 0);
     }
 
-    public function testUploadMultipleImage()
+    public function test_upload_multiple_image()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
@@ -176,7 +177,7 @@ class ImageUploadTest extends TestCase
 
         $path = __DIR__.'/assets/test.jpg';
 
-        $file = new \Illuminate\Http\UploadedFile($path, 'test.jpg', 'image/jpeg', null, true);
+        $file = new UploadedFile($path, 'test.jpg', 'image/jpeg', null, true);
 
         $size = rand(10, 20);
         $files = ['pictures' => array_pad([], $size, $file)];
@@ -203,14 +204,14 @@ class ImageUploadTest extends TestCase
         }
     }
 
-    public function testRemoveMultipleFiles()
+    public function test_remove_multiple_files()
     {
         File::cleanDirectory(public_path('uploads/images'));
 
         // upload files
         $path = __DIR__.'/assets/test.jpg';
 
-        $file = new \Illuminate\Http\UploadedFile($path, 'test.jpg', 'image/jpeg', null, true);
+        $file = new UploadedFile($path, 'test.jpg', 'image/jpeg', null, true);
 
         $size = rand(10, 20);
         $files = ['pictures' => array_pad([], $size, $file)];
@@ -224,6 +225,21 @@ class ImageUploadTest extends TestCase
         );
 
         $this->assertEquals($this->fileCountInImageDir(), $size);
+
+        $model = MultipleImage::first();
+        $pictures = $model->pictures;
+        $picture = $pictures[0];
+
+        $this->call('PUT', '/admin/multiple-images/'.$model->id, [
+            'pictures' => [
+                '_file_del_' => $picture,
+            ],
+        ]);
+
+        $this->assertResponseStatus(302);
+        $this->assertRedirectedTo('/admin/multiple-images');
+        $this->assertNotContains($picture, $model->fresh()->pictures);
+        $this->assertFileDoesNotExist(public_path('uploads/'.$picture));
     }
 
     protected function fileCountInImageDir($dir = 'uploads/images')
