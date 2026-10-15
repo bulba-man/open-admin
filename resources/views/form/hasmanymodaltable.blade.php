@@ -8,6 +8,9 @@
                     data-sort-column="{{ $options['sortColumn'] }}"
                     data-sort-group-column="{{ $options['sortGroupColumn'] }}"
                     data-sort-with="{{ $options['sortWith'] }}"
+                    @isset($options['sortGroupOrder'])
+                        data-sort-group-order="{{ $options['sortGroupOrder'] }}"
+                    @endisset
                 @endif
             >
                 <thead>
@@ -44,7 +47,7 @@
                         $rowIsNew = \Illuminate\Support\Str::startsWith($rowKey, 'new_');
                     @endphp
 
-                    <tr class="has-many-{{$id}}-form fields-group has-many-modal-table-row {{ $rowHasErrors ? 'has-many-modal-table-error' : '' }}"
+                    <tr class="has-many-{{$id}}-form fields-group has-many-modal-table-row {{ $rowHasErrors ? 'has-many-modal-table-error' : '' }} {{ !empty($options['removedRows'][$pk]) ? 'has-many-modal-table-deleted' : '' }}"
                         data-has-many-row-key="{{ $rowKey }}"
                         data-has-many-row-new="{{ $rowIsNew ? '1' : '0' }}"
                     >
@@ -96,7 +99,7 @@
                         </td>
 
                         <td class="form-group has-many-modal-table-actions">
-                            <button type="button" class="btn btn-primary btn-sm has-many-modal-edit">
+                            <button type="button" class="btn btn-primary btn-sm has-many-modal-edit {{ !empty($options['removedRows'][$pk]) ? 'd-none' : '' }}">
                                 @include('admin::form._add_delete_button', ['type' => 'edit', 'options' => $options, 'defaultText' => trans('admin.edit'), 'defaultIcon' => 'icon-edit'])
                             </button>
 
@@ -104,7 +107,7 @@
                                 <button type="button" class="btn btn-danger btn-sm has-many-modal-delete">
                                     @include('admin::form._add_delete_button', ['type' => 'delete', 'options' => $options, 'defaultText' => trans('admin.delete'), 'defaultIcon' => 'icon-trash'])
                                 </button>
-                                <button type="button" class="btn btn-light btn-sm has-many-modal-restore d-none">
+                                <button type="button" class="btn btn-light btn-sm has-many-modal-restore {{ empty($options['removedRows'][$pk]) ? 'd-none' : '' }}">
                                     @include('admin::form._add_delete_button', ['type' => 'delete', 'options' => $options, 'defaultText' => trans('admin.restore'), 'defaultIcon' => 'icon-undo'])
                                 </button>
                             @endif
