@@ -120,6 +120,18 @@ class HasMany extends Field
      */
     protected $sortGroupColumn = null;
 
+    /** @var array<int, int|string|null>|\Closure|null */
+    protected $sortGroupOrder = null;
+
+    /** @var list<string> */
+    protected array $resolvedSortGroupOrder = [];
+
+    /** @var list<string> */
+    protected array $sortableGroups = [];
+
+    /** @var array<int|string, bool> */
+    protected array $sortableRemovedRows = [];
+
     /**
      * Sort UI mode for HasMany table rows.
      *
@@ -170,11 +182,17 @@ class HasMany extends Field
 
         $input = Arr::only($input, $this->column);
 
+        unset($input[$this->column][static::MODAL_TABLE_PRESENT_KEY]);
+
         /** unset item that contains remove flag */
         foreach ($input[$this->column] as $key => $value) {
-            if ($value[NestedForm::REMOVE_FLAG_NAME]) {
+            if (! is_array($value) || ! empty($value[NestedForm::REMOVE_FLAG_NAME])) {
                 unset($input[$this->column][$key]);
             }
+        }
+
+        if (empty($input[$this->column])) {
+            return false;
         }
 
         $form = $this->buildNestedForm($this->column, $this->builder);
@@ -284,6 +302,63 @@ class HasMany extends Field
         $this->options['sortGroupColumn'] = $column;
 
         return $this;
+    }
+
+    /**
+     * Set group priority, resolved with the parent Form when rendering.
+     *
+     * @param  array<int, int|string|null>|\Closure(Form): array<int, int|string|null>  $order
+     */
+    public function sortGroupOrder(array|\Closure $order): self
+    {
+        $this->sortGroupOrder = $order;
+
+        return $this;
+    }
+
+    protected function hasSortGroupOrder(): bool
+    {
+        return $this->isSortableTable()
+            && $this->sortGroupColumn !== null
+            && $this->sortGroupColumn !== ''
+            && $this->sortGroupOrder !== null;
+    }
+
+    protected function resolveSortGroupOrder(): void
+    {
+        $this->resolvedSortGroupOrder = [];
+        $this->sortableGroups = [];
+        $this->sortableRemovedRows = [];
+
+        if (! $this->hasSortGroupOrder()) {
+            return;
+        }
+
+        $order = $this->sortGroupOrder instanceof \Closure
+            ? ($this->sortGroupOrder)($this->form)
+            : $this->sortGroupOrder;
+
+        if (! is_array($order)) {
+            throw new \InvalidArgumentException('HasMany sortGroupOrder must return an array of group IDs.');
+        }
+
+        foreach ($order as $group) {
+            if ($group === null || $group === '') {
+                continue;
+            }
+
+            if (! is_int($group) && ! is_string($group)) {
+                throw new \InvalidArgumentException('HasMany sortGroupOrder IDs must be integers or strings.');
+            }
+
+            $group = (string) $group;
+
+            if (! in_array($group, $this->resolvedSortGroupOrder, true)) {
+                $this->resolvedSortGroupOrder[] = $group;
+            }
+        }
+
+        $this->sortableGroups = [...$this->resolvedSortGroupOrder, ''];
     }
 
     /**
@@ -447,8 +522,11 @@ class HasMany extends Field
      */
     protected function buildNestedForm($column, \Closure $builder, $model = null)
     {
-        $form = new NestedForm($column, $model);
+        return $this->configureNestedForm(new NestedForm($column, $model), $builder);
+    }
 
+    protected function configureNestedForm(NestedForm $form, \Closure $builder): NestedForm
+    {
         if ($this->form instanceof WidgetForm) {
             $form->setWidgetForm($this->form);
         } else {
@@ -671,8 +749,9 @@ class HasMany extends Field
     /**
      * Sort persisted/default values by configured group and order.
      */
-    protected function sortSortableTableValues($values): array
+    protected function sortSortableTableValues($values, bool $preserveRowOrder = false): array
     {
+        /** @var list<array{key: int|string, data: mixed, group: string, order: int, position: int}> $rows */
         $rows = [];
         $position = 0;
 
@@ -688,16 +767,37 @@ class HasMany extends Field
                 'key' => $key,
                 'data' => $data,
                 'group' => $this->sortableGroupValue($row),
-                'order' => is_numeric($order) ? (int) $order : PHP_INT_MAX,
+                'order' => $preserveRowOrder ? $position : (is_numeric($order) ? (int) $order : PHP_INT_MAX),
                 'position' => $position,
             ];
 
             $position++;
         }
 
-        usort($rows, function (array $left, array $right) {
-            return [$left['group'], $left['order'], $left['position']]
-                <=> [$right['group'], $right['order'], $right['position']];
+        $groupRanks = [];
+
+        if ($this->hasSortGroupOrder()) {
+            $unknownGroups = [];
+
+            foreach ($rows as $row) {
+                if ($row['group'] !== ''
+                    && ! in_array($row['group'], $this->resolvedSortGroupOrder, true)
+                    && ! in_array($row['group'], $unknownGroups, true)) {
+                    $unknownGroups[] = $row['group'];
+                }
+            }
+
+            usort($unknownGroups, fn (string $left, string $right): int => $left <=> $right);
+            $this->sortableGroups = [...$this->resolvedSortGroupOrder, ...$unknownGroups, ''];
+            $groupRanks = array_flip($this->sortableGroups);
+        }
+
+        usort($rows, function (array $left, array $right) use ($groupRanks): int {
+            $leftGroup = $groupRanks ? $groupRanks[$left['group']] : $left['group'];
+            $rightGroup = $groupRanks ? $groupRanks[$right['group']] : $right['group'];
+
+            return [$leftGroup, $left['order'], $left['position']]
+                <=> [$rightGroup, $right['order'], $right['position']];
         });
 
         $sorted = [];
@@ -782,16 +882,34 @@ class HasMany extends Field
          *
          * Else get data from database.
          */
-        if ($values = old($this->column)) {
+        $values = old($this->column);
+
+        if ($this->hasSortGroupOrder() ? $values !== null : (bool) $values) {
+            $values = (array) $values;
+            unset($values[static::MODAL_TABLE_PRESENT_KEY]);
+
+            if ($this->hasSortGroupOrder()) {
+                $values = $this->sortSortableTableValues($values, true);
+            }
+
             foreach ($values as $key => $data) {
-                if ($data[NestedForm::REMOVE_FLAG_NAME] == 1) {
+                if (! $this->hasSortGroupOrder() && $data[NestedForm::REMOVE_FLAG_NAME] == 1) {
                     continue;
                 }
 
                 $model = $relation->getRelated()->replicate()->forceFill($data);
 
-                $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $model)
-                    ->fill($data);
+                if ($this->hasSortGroupOrder()) {
+                    $nestedForm = $this->configureNestedForm(
+                        (new NestedForm($this->column, $model))->setKey($key),
+                        $this->builder
+                    );
+                    $this->sortableRemovedRows[$key] = Arr::get($data, NestedForm::REMOVE_FLAG_NAME) == 1;
+                } else {
+                    $nestedForm = $this->buildNestedForm($this->column, $this->builder, $model);
+                }
+
+                $forms[$key] = $nestedForm->fill($data);
             }
         } else {
             if (empty($this->value)) {
@@ -866,10 +984,13 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
 
     var index = 0;
     var add = Array.from(hasMany.querySelectorAll('.add')).find(add => add.closest('#has-many-{$this->id}') === hasMany);
+    var orderedTable = hasMany.querySelector('table.has-many-{$this->id}[data-sort-group-order]');
 
     if (add) {
         add.addEventListener("click", function () {
-            index++;
+            do {
+                index++;
+            } while (orderedTable && Array.from(orderedTable.tBodies[0].children).some(row => row.getAttribute('data-has-many-row-key') === 'new_' + index));
 
             var tpl = hasMany.querySelector('template.{$this->id}-tpl').innerHTML;
             tpl = tpl.replace(/{$defaultKey}/g, index);
@@ -889,6 +1010,10 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             {$templateScript}
             admin.form.cascade(clone);
             admin.form.jsonFields();
+
+            if (orderedTable) {
+                hasMany.dispatchEvent(new CustomEvent('has-many:row-change'));
+            }
             return false;
 
         });
@@ -945,6 +1070,10 @@ function addRemoveHasManyListener{$this->getJSSelector()}(remove, hasMany){
         let removeFlag = form.querySelector('.$removeClass');
         if (removeFlag) {
             removeFlag.value = 1;
+        }
+
+        if (hasMany.querySelector('table.has-many-{$this->id}[data-sort-group-order]')) {
+            form.dispatchEvent(new CustomEvent('has-many:row-change', { bubbles: true }));
         }
 
         return false;
@@ -1013,6 +1142,7 @@ EOT;
         $sortColumn = addslashes($this->sortColumn);
         $sortGroupColumn = addslashes($this->sortGroupColumn ?? '');
         $sortWith = addslashes($this->sortWith);
+        $groupScript = $this->sortableGroupOrderScript();
 
         $script = <<<JS
 document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
@@ -1033,6 +1163,8 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
         return;
     }
 
+    {$groupScript}
+
     function columnSelector(column) {
         return '[name$="' + column.split('.').join('][').split('->').join('][').replace(/^/, '[').replace(/$/, ']') + '"]';
     }
@@ -1044,7 +1176,7 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     }
 
     function activeRows() {
-        return Array.from(tbody.querySelectorAll('.has-many-{$this->id}-form')).filter(row => {
+        return Array.from(tbody.children).filter(row => {
             return row.style.display !== 'none' && !rowIsRemoved(row);
         });
     }
@@ -1054,10 +1186,17 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             return null;
         }
 
-        return row.querySelector('[data-hasmany-sort-field="' + column + '"]')
-            || row.querySelector('input' + columnSelector(column))
-            || row.querySelector('select' + columnSelector(column))
-            || row.querySelector('textarea' + columnSelector(column));
+        var selectors = ['[data-hasmany-sort-field="' + column + '"]', 'input' + columnSelector(column),
+            'select' + columnSelector(column), 'textarea' + columnSelector(column)];
+
+        for (var selector of selectors) {
+            var field = Array.from(row.querySelectorAll(selector)).find(field => ownsGroupEvent({ target: field }));
+            if (field) {
+                return field;
+            }
+        }
+
+        return null;
     }
 
     function groupValue(row) {
@@ -1071,7 +1210,8 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     }
 
     function refreshOrderValues() {
-        var counters = {};
+        refreshGroupOrder();
+        var counters = Object.create(null);
 
         activeRows().forEach(row => {
             var group = groupValue(row);
@@ -1110,6 +1250,10 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     }
 
     hasMany.addEventListener('click', event => {
+        if (!ownsGroupEvent(event)) {
+            return;
+        }
+
         var button = event.target.closest('.has-many-sort-up, .has-many-sort-down');
 
         if (!button || !hasMany.contains(button)) {
@@ -1128,7 +1272,7 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     });
 
     hasMany.addEventListener('change', event => {
-        if (groupColumn && event.target.matches(columnSelector(groupColumn))) {
+        if (ownsGroupEvent(event) && groupColumn && event.target.matches(columnSelector(groupColumn))) {
             refreshOrderValues();
         }
     });
@@ -1137,14 +1281,29 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
         button.addEventListener('click', () => window.setTimeout(refreshOrderValues, 0));
     });
 
+    hasMany.addEventListener('has-many:row-change', event => {
+        if (ownsGroupEvent(event)) {
+            refreshOrderValues();
+        }
+    });
+
     if ((sortWith === 'drag' || sortWith === 'all') && typeof Sortable !== 'undefined') {
         new Sortable(tbody, {
             animation: 150,
             handle: '.handle',
-            onMove: function (event) {
-                return groupValue(event.dragged) === groupValue(event.related);
+            filter: function (event, target) {
+                var row = target.closest('.has-many-{$this->id}-form');
+                return row && rowIsRemoved(row);
             },
-            onEnd: refreshOrderValues
+            onStart: captureGroupDrag,
+            onMove: function (event) {
+                return !rowIsRemoved(event.dragged) && !rowIsRemoved(event.related)
+                    && groupValue(event.dragged) === groupValue(event.related);
+            },
+            onEnd: function (event) {
+                finishGroupDrag(event);
+                refreshOrderValues();
+            }
         });
     }
 
@@ -1154,6 +1313,117 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
 JS;
 
         Admin::script($script);
+    }
+
+    /**
+     * Shared group ordering for the two table initializers.
+     */
+    protected function sortableGroupOrderScript(): string
+    {
+        if (! $this->hasSortGroupOrder()) {
+            return 'function refreshGroupOrder() {} function captureGroupDrag() {} function finishGroupDrag() {} function ownsGroupEvent() { return true; }';
+        }
+
+        return <<<'JS'
+    var groupConfiguration = JSON.parse(tbody.closest('table').getAttribute('data-sort-group-order'));
+    var orderedGroups = groupConfiguration.groups.slice();
+    var dragRows = null;
+
+    function ownsGroupEvent(event) {
+        return event.target.closest('div[id^="has-many-"]:not(.has-many-modal)') === hasMany;
+    }
+
+    function compareGroupIds(left, right) {
+        var numeric = /^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*$/;
+        var integer = /^\s*[+-]?\d+\s*$/;
+
+        if (numeric.test(left) && numeric.test(right)) {
+            var leftNumber = integer.test(left) && integer.test(right) ? BigInt(left.trim()) : Number(left);
+            var rightNumber = integer.test(left) && integer.test(right) ? BigInt(right.trim()) : Number(right);
+
+            return leftNumber < rightNumber ? -1 : (leftNumber > rightNumber ? 1 : 0);
+        }
+
+        var encoder = new TextEncoder();
+        var leftBytes = encoder.encode(left);
+        var rightBytes = encoder.encode(right);
+
+        for (var index = 0; index < Math.min(leftBytes.length, rightBytes.length); index++) {
+            if (leftBytes[index] !== rightBytes[index]) {
+                return leftBytes[index] < rightBytes[index] ? -1 : 1;
+            }
+        }
+
+        return leftBytes.length - rightBytes.length;
+    }
+
+    function groupRank(group) {
+        var rank = orderedGroups.indexOf(group);
+
+        if (rank !== -1) {
+            return rank;
+        }
+
+        rank = orderedGroups.length - 1;
+
+        for (var index = groupConfiguration.priority.length; index < orderedGroups.length - 1; index++) {
+            if (compareGroupIds(group, orderedGroups[index]) < 0) {
+                rank = index;
+                break;
+            }
+        }
+
+        orderedGroups.splice(rank, 0, group);
+
+        return rank;
+    }
+
+    function refreshGroupOrder() {
+        var rows = Array.from(tbody.children);
+
+        rows.forEach(row => {
+            groupRank(groupValue(row));
+
+            if (rowIsRemoved(row)) {
+                row.querySelectorAll('[required]').forEach(field => {
+                    field.setAttribute('data-has-many-modal-required', '1');
+                    field.removeAttribute('required');
+                });
+            }
+        });
+
+        rows.sort((left, right) => groupRank(groupValue(left)) - groupRank(groupValue(right)));
+        var cursor = tbody.firstElementChild;
+
+        rows.forEach(row => {
+            if (row === cursor) {
+                cursor = cursor.nextElementSibling;
+            } else {
+                tbody.insertBefore(row, cursor);
+            }
+        });
+    }
+
+    function captureGroupDrag() {
+        dragRows = Array.from(tbody.children);
+    }
+
+    function finishGroupDrag(event) {
+        var rows = activeRows();
+        var index = rows.indexOf(event.item);
+        var rank = groupRank(groupValue(event.item));
+        var previous = rows[index - 1];
+        var next = rows[index + 1];
+
+        if (dragRows && (rowIsRemoved(event.item)
+            || (previous && groupRank(groupValue(previous)) > rank)
+            || (next && groupRank(groupValue(next)) < rank))) {
+            dragRows.forEach(row => tbody.appendChild(row));
+        }
+
+        dragRows = null;
+    }
+JS;
     }
 
     /**
@@ -1170,6 +1440,7 @@ JS;
         $sortGroupColumn = addslashes($this->sortGroupColumn ?? '');
         $sortWith = addslashes($this->sortWith);
         $sortable = $this->isSortableTable() ? 'true' : 'false';
+        $groupScript = $this->sortableGroupOrderScript();
 
         $script = <<<JS
 document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
@@ -1188,6 +1459,9 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     var groupColumn = '{$sortGroupColumn}';
     var sortWith = '{$sortWith}';
     var sortable = {$sortable};
+    var restoringGroupSnapshot = false;
+
+    {$groupScript}
 
     function columnSelector(column) {
         return '[name$="' + column.split('.').join('][').split('->').join('][').replace(/^/, '[').replace(/$/, ']') + '"]';
@@ -1198,10 +1472,17 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             return null;
         }
 
-        return row.querySelector('[data-hasmany-sort-field="' + column + '"]')
-            || row.querySelector('input' + columnSelector(column))
-            || row.querySelector('select' + columnSelector(column))
-            || row.querySelector('textarea' + columnSelector(column));
+        var selectors = ['[data-hasmany-sort-field="' + column + '"]', 'input' + columnSelector(column),
+            'select' + columnSelector(column), 'textarea' + columnSelector(column)];
+
+        for (var selector of selectors) {
+            var field = Array.from(row.querySelectorAll(selector)).find(field => ownsGroupEvent({ target: field }));
+            if (field) {
+                return field;
+            }
+        }
+
+        return null;
     }
 
     function fieldText(field) {
@@ -1245,6 +1526,7 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     }
 
     function restoreSnapshot(row, snapshot) {
+        restoringGroupSnapshot = tbody.closest('table').hasAttribute('data-sort-group-order');
         Array.from(row.querySelectorAll('input, select, textarea')).forEach((field, position) => {
             var state = snapshot[position];
 
@@ -1269,7 +1551,26 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             field.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
+        restoringGroupSnapshot = false;
+
+        if (row._hasManyModalPosition) {
+            var position = row._hasManyModalPosition;
+
+            if (position.next && position.next.parentNode === tbody) {
+                tbody.insertBefore(row, position.next);
+            } else if (position.previous && position.previous.parentNode === tbody) {
+                tbody.insertBefore(row, position.previous.nextSibling);
+            } else {
+                tbody.appendChild(row);
+            }
+
+            row._hasManyModalPosition = null;
+        }
+
         updatePreview(row);
+        if (tbody.closest('table').hasAttribute('data-sort-group-order')) {
+            refreshOrderValues();
+        }
     }
 
     function removeRequired(row) {
@@ -1333,7 +1634,7 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             return [];
         }
 
-        return Array.from(tbody.querySelectorAll('.has-many-{$this->id}-form')).filter(row => {
+        return Array.from(tbody.children).filter(row => {
             return row.style.display !== 'none' && !rowIsRemoved(row);
         });
     }
@@ -1353,7 +1654,8 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             return;
         }
 
-        var counters = {};
+        refreshGroupOrder();
+        var counters = Object.create(null);
 
         activeRows().forEach(row => {
             var group = groupValue(row);
@@ -1407,6 +1709,9 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     }
 
     function initRow(row) {
+        if (rowIsRemoved(row)) {
+            removeRequired(row);
+        }
         row.querySelectorAll('input').forEach(addEnterListener);
         row.querySelectorAll('.has-many-modal').forEach(modalEl => {
             if (modalEl.getAttribute('data-has-many-modal-bound') === '1') {
@@ -1432,7 +1737,10 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
 
     if (add) {
         add.addEventListener('click', function () {
-            index++;
+            do {
+                index++;
+            } while (tbody.closest('table').hasAttribute('data-sort-group-order')
+                && Array.from(tbody.children).some(row => row.getAttribute('data-has-many-row-key') === 'new_' + index));
 
             var tpl = hasMany.querySelector('template.{$this->id}-tpl').innerHTML;
             tpl = tpl.replace(/{$defaultKey}/g, index);
@@ -1449,6 +1757,9 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             var modalEl = clone.querySelector('.has-many-modal');
             if (modalEl) {
                 clone._hasManyModalSnapshot = captureSnapshot(clone);
+                if (tbody.closest('table').hasAttribute('data-sort-group-order')) {
+                    clone._hasManyModalPosition = { previous: clone.previousElementSibling, next: clone.nextElementSibling };
+                }
                 clone._hasManyModalApplied = false;
                 bootstrap.Modal.getOrCreateInstance(modalEl).show();
             }
@@ -1458,6 +1769,10 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     }
 
     hasMany.addEventListener('click', event => {
+        if (!ownsGroupEvent(event)) {
+            return;
+        }
+
         var edit = event.target.closest('.has-many-modal-edit');
         var apply = event.target.closest('.has-many-modal-apply');
         var remove = event.target.closest('.has-many-modal-delete');
@@ -1472,6 +1787,9 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
 
             if (editModal) {
                 editRow._hasManyModalSnapshot = captureSnapshot(editRow);
+                if (editRow.closest('table').hasAttribute('data-sort-group-order')) {
+                    editRow._hasManyModalPosition = { previous: editRow.previousElementSibling, next: editRow.nextElementSibling };
+                }
                 editRow._hasManyModalApplied = false;
                 bootstrap.Modal.getOrCreateInstance(editModal).show();
             }
@@ -1488,6 +1806,7 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
             if (applyRow) {
                 applyRow._hasManyModalApplied = true;
                 applyRow._hasManyModalSnapshot = null;
+                applyRow._hasManyModalPosition = null;
                 updatePreview(applyRow);
                 refreshOrderValues();
             }
@@ -1539,13 +1858,17 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
     });
 
     hasMany.addEventListener('change', event => {
+        if (!ownsGroupEvent(event)) {
+            return;
+        }
+
         var row = event.target.closest('.has-many-{$this->id}-form');
 
         if (row && event.target.matches('[name]')) {
             updatePreview(row);
         }
 
-        if (sortable && groupColumn && event.target.matches(columnSelector(groupColumn))) {
+        if (!restoringGroupSnapshot && sortable && groupColumn && event.target.matches(columnSelector(groupColumn))) {
             refreshOrderValues();
         }
     });
@@ -1556,10 +1879,19 @@ document.querySelectorAll('#has-many-{$this->id}').forEach(hasMany => {
         new Sortable(tbody, {
             animation: 150,
             handle: '.handle',
-            onMove: function (event) {
-                return groupValue(event.dragged) === groupValue(event.related);
+            filter: function (event, target) {
+                var row = target.closest('.has-many-{$this->id}-form');
+                return row && rowIsRemoved(row);
             },
-            onEnd: refreshOrderValues
+            onStart: captureGroupDrag,
+            onMove: function (event) {
+                return !rowIsRemoved(event.dragged) && !rowIsRemoved(event.related)
+                    && groupValue(event.dragged) === groupValue(event.related);
+            },
+            onEnd: function (event) {
+                finishGroupDrag(event);
+                refreshOrderValues();
+            }
         });
     }
 
@@ -1654,6 +1986,7 @@ JS;
      */
     protected function renderTable()
     {
+        $this->resolveSortGroupOrder();
         $headers = [];
         $fields = [];
         $hidden = [];
@@ -1693,18 +2026,18 @@ JS;
         /* Build cell with hidden elements */
         $template .= '<td class="hidden">'.implode('', $hidden).'</td>';
 
+        $forms = $this->buildRelatedForms();
+
         $this->setupScript(implode("\r\n", $scripts));
 
         // specify a view to render.
         $this->view = $this->views[$this->viewMode];
 
-        $options = array_merge($this->options, [
-            'sortableHasManyTable' => $this->isSortableTable(),
-        ]);
+        $options = $this->sortableTableOptions();
 
         return parent::fieldRender([
             'headers' => $headers,
-            'forms' => $this->buildRelatedForms(),
+            'forms' => $forms,
             'template' => $template,
             'modalTablePresentKey' => static::MODAL_TABLE_PRESENT_KEY,
             'relationName' => $this->relationName,
@@ -1722,29 +2055,49 @@ JS;
      */
     protected function renderModalTable()
     {
+        $this->resolveSortGroupOrder();
         $form = $this->buildNestedForm($this->column, $this->builder);
         $previewColumns = $this->modalTablePreviewColumns($form);
 
         [$template, $script] = $form->getTemplateHtmlAndScript();
 
-        $this->setupScript($script);
-
         $forms = $this->buildRelatedForms();
+
+        $this->setupScript($script);
 
         $this->view = $this->views[$this->viewMode];
 
-        $options = array_merge($this->options, [
-            'sortableHasManyTable' => $this->isSortableTable(),
-        ]);
+        $options = $this->sortableTableOptions();
 
         return parent::fieldRender([
             'forms' => $forms,
             'previews' => $this->modalTablePreviews($forms, $previewColumns),
             'previewColumns' => $previewColumns,
             'template' => $template,
+            'modalTablePresentKey' => static::MODAL_TABLE_PRESENT_KEY,
             'relationName' => $this->relationName,
             'verticalAlign' => $this->verticalAlign,
             'options' => $options,
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function sortableTableOptions(): array
+    {
+        $options = array_merge($this->options, [
+            'sortableHasManyTable' => $this->isSortableTable(),
+            'removedRows' => $this->sortableRemovedRows,
+        ]);
+
+        if ($this->hasSortGroupOrder()) {
+            $options['sortGroupOrder'] = json_encode([
+                'priority' => $this->resolvedSortGroupOrder,
+                'groups' => $this->sortableGroups,
+            ], JSON_THROW_ON_ERROR);
+        }
+
+        return $options;
     }
 }

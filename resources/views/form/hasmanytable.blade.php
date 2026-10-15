@@ -6,6 +6,9 @@
                     data-sort-column="{{ $options['sortColumn'] }}"
                     data-sort-group-column="{{ $options['sortGroupColumn'] }}"
                     data-sort-with="{{ $options['sortWith'] }}"
+                    @isset($options['sortGroupOrder'])
+                        data-sort-group-order="{{ $options['sortGroupOrder'] }}"
+                    @endisset
                 @endif
             >
                 <thead>
@@ -27,7 +30,12 @@
                 </thead>
                 <tbody class="has-many-{{$id}}-forms">
                 @foreach($forms as $pk => $form)
-                    <tr class="has-many-{{$id}}-form fields-group">
+                    <tr class="has-many-{{$id}}-form fields-group"
+                        @isset($options['sortGroupOrder'])
+                            data-has-many-row-key="{{ $pk }}"
+                            @if(!empty($options['removedRows'][$pk])) style="display: none" @endif
+                        @endisset
+                    >
 
                         @if(!empty($options['sortable']))
                             <td width="20">
@@ -77,7 +85,11 @@
             </table>
 
             <template class="{{$id}}-tpl">
-                    <tr class="has-many-{{$id}}-form fields-group">
+                    <tr class="has-many-{{$id}}-form fields-group"
+                        @isset($options['sortGroupOrder'])
+                            data-has-many-row-key="new_{{ \OpenAdmin\Admin\Form\NestedForm::DEFAULT_KEY_NAME }}"
+                        @endisset
+                    >
 
                     @if(!empty($options['sortable']))
                         <td width="20">

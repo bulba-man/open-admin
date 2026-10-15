@@ -93,6 +93,36 @@ Available sort UI modes:
 
 When `sortGroupColumn()` is set, order values are normalized inside each group.
 
+### Explicit Group Order
+
+In `useTable()` and `useModalTable()`, group order can be specified independently of row positions:
+
+```php
+$items
+    ->sortable()
+    ->sortColumn('position')
+    ->sortGroupColumn('group_id')
+    ->sortGroupOrder([20, 10, 30]);
+```
+
+The nested form must include the `group_id` field. Groups appear as `20 → 10 → 30`, with rows inside each group ordered by `position`. Unlisted non-empty groups follow using the previous ID comparison; ungrouped rows (`null`, a missing value, or `''`) appear last. `0` and `'0'` are valid group IDs; an integer ID and its HTML string representation match. String IDs, including leading zeros, are preserved; duplicate IDs are considered once, and absent groups do not create rows.
+
+Without `sortGroupOrder()`, behavior remains unchanged. `sortGroupOrder([])` enables the new ordering with the empty group last, without prioritized groups. The setting only applies when sorting is enabled and `sortGroupColumn()` is configured.
+
+Pass a Closure to obtain the list from the populated parent form:
+
+```php
+$items->sortGroupOrder(function (Form $form): array {
+    return $form->model()->getAttribute('group_order') ?? [];
+});
+```
+
+Here, `group_order` is an application model attribute containing an array of IDs. The callback receives the parent `Form` and runs once each time the field is rendered, after the form is populated. Validation and saving do not invoke it. Its result supplies both the server-rendered rows and the client-side order.
+
+After a validation error, keys, user values, new and deleted rows, and the submitted sequence within each group are retained. Saving numbers positions independently from zero in each group, excluding deleted rows. Dragging and buttons cannot move rows between groups. Changing the group field moves the row into its group; cancelling modal editing restores both values and row position.
+
+Known groups use the order prepared by the server. If an unknown ID is first entered on the client, its group is inserted before the first unknown group with a greater ID under the previous comparison, or at the end of the unknown block, before the empty group. With mixed numeric and text IDs, this is not a full re-sort: known groups retain their relative order until the form is rendered again. There is no automatic synchronization with another group table; the application supplies the list.
+
 ## Button Customization
 
 The modal table uses `HasAddDeleteButtons` options for add, edit, delete, and restore-style controls.
