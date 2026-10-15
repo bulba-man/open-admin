@@ -8,6 +8,7 @@ use OpenAdmin\Admin\Form\Field\HasMany;
 use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\DomCrawler\Crawler;
+use Tests\Models\SortableItem;
 use Tests\Models\SortableUser;
 
 class HasManySortGroupOrderTest extends TestCase
@@ -236,6 +237,61 @@ class HasManySortGroupOrderTest extends TestCase
         $this->assertSame(1, $prepared['new_9']['position']);
         $this->assertSame('20', $prepared['new_9']['group']);
         $this->assertSame($input[31], $prepared[31]);
+    }
+
+    #[DataProvider('modes')]
+    public function test_prepare_preserves_the_difference_between_missing_and_empty_input(string $mode): void
+    {
+        [$field] = $this->field($mode);
+        $field->sortGroupOrder([20, 10]);
+
+        $this->assertFalse($field->prepare(false));
+        $this->assertSame([], $field->prepare([]));
+        $this->assertSame([], $field->prepare(['__modal_table_present__' => '1']));
+    }
+
+    #[DataProvider('modes')]
+    public function test_partial_relation_update_does_not_include_an_omitted_has_many(string $mode): void
+    {
+        $model = new class extends SortableUser
+        {
+            public function otherItems(): Illuminate\Database\Eloquent\Relations\HasMany
+            {
+                return $this->hasMany(SortableItem::class, 'user_id');
+            }
+        };
+        $form = new class($model) extends Form
+        {
+            public function prepareRelationUpdate(array $updates): array
+            {
+                $this->getRelations();
+
+                return $this->prepareUpdate($updates, false, true);
+            }
+        };
+
+        foreach (['sortableItems', 'otherItems'] as $relation) {
+            $form->hasMany($relation, function (Form\NestedForm $nested): void {
+                $nested->text('group');
+                $nested->text('title');
+            })->mode($mode)->sortable()->sortColumn('position')->sortGroupColumn('group')->sortGroupOrder([20, 10]);
+        }
+
+        $updates = [
+            'sortableItems' => [
+                7 => ['id' => 7, 'group' => 20, 'position' => 99, 'title' => 'Updated', '_remove_' => 0],
+            ],
+        ];
+        $prepared = $form->prepareRelationUpdate($updates);
+
+        $this->assertSame(['sortableItems'], array_keys($prepared));
+        $this->assertSame('Updated', $prepared['sortableItems'][7]['title']);
+        $this->assertSame(0, $prepared['sortableItems'][7]['position']);
+
+        $preparedWithEmptyRelation = $form->prepareRelationUpdate($updates + ['otherItems' => []]);
+
+        $this->assertSame(['sortableItems', 'otherItems'], array_keys($preparedWithEmptyRelation));
+        $this->assertSame([], $preparedWithEmptyRelation['otherItems']);
     }
 
     #[DataProvider('modes')]
