@@ -491,11 +491,15 @@ class HasMany extends Field
     /**
      * Prepare input data for insert or update.
      *
-     * @param  array  $input
-     * @return array
+     * @param  array|false  $input
+     * @return array|false
      */
     public function prepare($input)
     {
+        if ($input === false) {
+            return false;
+        }
+
         if (! is_array($input)) {
             return [];
         }
